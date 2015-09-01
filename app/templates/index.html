@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<h2>Hello, {{ session['name'] or 'Stranger' }}!</h2>
+
+<p>What? You're not
+  <span class="alert">{{ session['name'] or 'a stranger' }}</span>??
+</p>
+
+<p>Then please enter you name here:</p>
+
+<form method="POST">
+  <input type="text" name="name">
+  <input type="submit" value="Submit">
+</form>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+/*
+  These are here just to check that
+  the stylesheet is being loaded.
+*/
+
+h1, h2, p {
+  font-family: Helvetica;
+  color: #bbb;
+}
+
+.alert {
+  font-weight: bold;
+  color: #f88;
+}
