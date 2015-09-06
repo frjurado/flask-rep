@@ -1,11 +1,11 @@
 ########################
 # Structured Flask app #
-#   (simple version)   #
+# (blueprint version)  #
 ########################
 
-# This file retains the app running only.
-# Details apart, any sensible project
-# should adhere to this basic structure:
+# This file retains the app creation and running.
+# The basic structure looks somthing like this,
+# where '/main' is one blueprint package:
 #
 # /yourapplication
 #   /app
@@ -13,6 +13,9 @@
 #     ...
 #     /static
 #     /templates
+#     /main
+#       __init__.py
+#       ...
 #   /tests
 #     __init__.py
 #     ...
@@ -20,10 +23,11 @@
 #   config.py
 #
 
-from app import app
+from app import create_app
+app = create_app('default')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
 ########################
 # To run it:
