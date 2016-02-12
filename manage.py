@@ -23,16 +23,36 @@
 #   config.py
 #
 
+########################
+# Through Flask-Script #
+########################
+
 from app import create_app
+from flask.ext.script import Manager
+
 app = create_app('default')
+manager = Manager(app)
+
+# Custom command testing
+@manager.command
+def hello():
+    """
+    "Hello World" testing command.
+    """
+    print "hello World!"
 
 if __name__ == '__main__':
-    app.run()
+    manager.run()
 
 ########################
-# To run it:
+# To check available commands:
 #
 # $ source venv/Scripts/activate
 # (venv) $ python manage.py
+#
+# To run it:
+#
+# $ source venv/Scripts/activate
+# (venv) $ python manage.py runserver
 #
 ########################
