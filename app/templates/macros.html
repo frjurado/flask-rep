@@ -1,0 +1,11 @@
+{% macro errors(form) %}
+  {% if form.errors %}
+  <p class="alert">
+    {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+      {% for error in field_errors %}
+        {{ form[field_name].label }}: {{ error }}<br>
+      {% endfor %}
+    {% endfor %}
+  </p>
+  {% endif %}
+{% endmacro %}
