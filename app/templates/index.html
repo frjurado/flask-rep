@@ -2,20 +2,36 @@
 {% import 'macros.html' as macro %}
 
 {% block content %}
-<h2>Hello, {{ session['name'] or 'Stranger' }}!</h2>
+
+{% if session['name'] %}
+  <h2>Hello, {{ session['name'] }}!</h2>
+  <p>So you're a {{ session['role'] }}, isn't it?</p>
+{% else %}
+  <h2>Hello, Stranger!</h2>
+{% endif %}
 
 <p>What? You're not
   <span class="alert">{{ session.get('name', 'a stranger') }}</span>??
 </p>
-
-<p>Then please enter you name here:</p>
+<p>Then please enter you name and job here:</p>
 
 <form method="POST">
   {{ form.hidden_tag() }}
   {{ form.name.label }}: {{ form.name() }}
+  <br>
+  {{ form.role.label }}:
+  {% for subfield in form.role %}
+    {{ subfield }} {{ subfield.label }}
+  {% endfor %}
+  <br>
   {{ form. submit() }}
-  
+
   {{ macro.errors(form) }}
 </form>
 
+<ul>
+  {% for user in users %}
+  <li><b>{{ user.name }}</b>: {{ user.role.name }}.</li>
+  {% endfor %}
+</ul>
 {% endblock %}

@@ -1,5 +1,8 @@
 # Compiled
 *.pyc
 
+# Databases
+*.sqlite
+
 # Virtual Environment
 venv

@@ -27,19 +27,17 @@
 # Through Flask-Script #
 ########################
 
-from app import create_app
-from flask.ext.script import Manager
+from app import create_app, db
+from app.models import Role, User
+from flask.ext.script import Manager, Shell
 
 app = create_app('default')
 manager = Manager(app)
 
-# Custom command testing
-@manager.command
-def hello():
-    """
-    "Hello World" testing command.
-    """
-    print "hello World!"
+def make_shell_context():
+    return dict(app=app, db=db, Role=Role, User=User)
+
+manager.add_command("shell", Shell(make_context=make_shell_context))
 
 if __name__ == '__main__':
     manager.run()
