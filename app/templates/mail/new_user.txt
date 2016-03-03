@@ -1,0 +1,8 @@
+Test email...
+
+A new user was added to the Database.
+
+User: {{ user.name }}
+Role: {{ user.role.name }}
+
+Have a good morning!

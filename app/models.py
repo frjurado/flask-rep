@@ -1,5 +1,6 @@
 from . import db
 
+
 class Role(db.Model):
     __tablename__ = 'roles'
 
@@ -9,6 +10,7 @@ class Role(db.Model):
 
     def __repr__(self):
         return '<Role {0}>'.format(self.name)
+
 
 class User(db.Model):
     __tablename__ = 'users'

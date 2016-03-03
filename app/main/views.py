@@ -1,8 +1,11 @@
-from flask import request, session, render_template, redirect, url_for, flash
+from flask import \
+    request, session, render_template, redirect, url_for, flash, current_app
 from . import main
 from .. import db
 from .forms import NameForm
 from ..models import User, Role
+from ..email import send_email
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -18,6 +21,13 @@ def index():
                 user = User(name=form.name.data, role=role)
                 db.session.add(user)
                 flash('Welcome!')
+                if current_app.config["MAIL_TEST_MAIL"]:
+                    send_email(
+                        current_app.config["MAIL_TEST_MAIL"],
+                        "New user",
+                        "mail/new_user",
+                        user=user
+                    )
             else:
                 flash('Welcome back!')
             session['name'] = form.name.data

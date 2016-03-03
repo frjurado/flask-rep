@@ -1,5 +1,7 @@
 import unittest
+from flask import current_app
 from app import create_app, db
+
 
 class BasicTestCase(unittest.TestCase):
     def setUp(self):
@@ -14,7 +16,7 @@ class BasicTestCase(unittest.TestCase):
         self.app_context.pop()
 
     def test_app_exists(self):
-        self.assertFalse(self.app is None)
+        self.assertFalse(current_app is None)
 
     def test_app_is_testing(self):
-        self.assertTrue(self.app.config['TESTING'])
+        self.assertTrue(current_app.config['TESTING'])
