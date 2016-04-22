@@ -1,0 +1,14 @@
+New email confirmation
+----------------------
+
+Dear {{ user.username }},
+
+To confirm this new email, please click on the following link:</p>
+
+{{ url_for('auth.change_email', token=token, _external=True) }}
+
+Sincerely,
+
+Paco
+
+Note: don't reply to this email.

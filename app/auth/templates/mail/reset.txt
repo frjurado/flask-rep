@@ -1,0 +1,17 @@
+Account reset
+-------------
+
+Dear {{ user.username }},
+
+To reset your username and password click on the following link:
+
+{{ url_for('auth.reset', token=token, _external=True) }}
+
+If you have not requested a username and password reset
+simply ignore this message.
+
+Sincerely,
+
+Paco
+
+Note: don't reply to this email.

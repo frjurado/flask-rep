@@ -9,9 +9,13 @@ def send_async_email(app, msg):
         mail.send(msg)
 
 def send_email(to, subject, template, **kwargs):
+    """
+    Send an email. Required arguments are: to, subject, template.
+    Add any keyword arguments required by the template.
+    """
     app = current_app._get_current_object()
     msg = Message(
-        app.config['MAIL_TEST_SUBJECT_PREFIX'] + subject,
+        app.config['MAIL_SUBJECT_PREFIX'] + subject,
         sender=app.config['MAIL_USERNAME'] + "@gmail.com",
         recipients=[to]
     )

@@ -12,3 +12,10 @@ h1, h2, p {
   font-weight: bold;
   color: #f88;
 }
+
+.dashboard {
+  margin: 10px;
+  padding: 10px;
+  border: 2px solid #88d;
+  background-color: #ddf;
+}

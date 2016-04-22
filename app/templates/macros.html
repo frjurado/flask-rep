@@ -1,4 +1,5 @@
 
+
 {% macro errors(form) %}
   {% if form.errors %}
   <p class="alert">
@@ -9,4 +10,51 @@
     {% endfor %}
   </p>
   {% endif %}
+{% endmacro %}
+
+
+{% macro render_form( form,
+                      method="POST",
+                      action=None,
+                      vertical=True,
+                      use_label=True ) %}
+<form {{ 'action={}'.format(action) if action }} method={{ method }}>
+  {% if form.heading %}
+  <h2>{{ form.heading }}</h2>
+  {% endif %}
+
+  {{ form.csrf_token }}
+
+  {% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
+    {% if use_label %}
+      {{ field.label }}:
+    {% endif %}
+    {{ field() }}
+    {{ "<br>"|safe if vertical }}
+  {% endfor %}
+
+  {{ form.submit() if form.submit }}
+
+  {{ errors(form) }}
+</form>
+{% endmacro %}
+
+
+{% macro h_form( form,
+                 method="POST",
+                 action=None) %}
+{{ render_form (form, method, action, vertical=False, use_label=False) }}
+{% endmacro %}
+
+
+{% macro user_roles(user) %}
+{% if user.get_role() == "Blocked" %}
+  <td>{{ h_form(user.unblock_form, action=url_for('dash.unblock_user')) }}</td>
+  <td>{{ h_form(user.delete_form, action=url_for('dash.delete_account')) }}</td>
+{% elif user.get_role() == "Guest" %}
+  <td>{{ h_form(user.block_form, action=url_for('dash.block_user')) }}</td>
+{% elif user.assign_form %}
+  <td>{{ h_form(user.assign_form, action=url_for('dash.assign_role')) }}</td>
+  <td>{{ h_form(user.banish_form, action=url_for('dash.banish_user')) }}</td>
+{% endif %}
 {% endmacro %}

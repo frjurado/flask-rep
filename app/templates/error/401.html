@@ -1,0 +1,12 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<h2>401 - Unauthorized</h2>
+<p>You are not logged in.</p>
+
+<p>Go back to
+  <a href="{{ url_for('main.index') }}">index</a>.
+</p>
+
+{% endblock %}

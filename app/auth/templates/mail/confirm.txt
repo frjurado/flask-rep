@@ -1,0 +1,16 @@
+Account confirmation
+--------------------
+
+Dear {{ user.username }},
+
+Welcome to this blog!
+
+To confirm your account, please click on the following link:
+
+{{ url_for('auth.confirm', token=token, _external=True) }}
+
+Sincerely,
+
+Paco
+
+Note: don't reply to this email.
