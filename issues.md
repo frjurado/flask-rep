@@ -25,6 +25,7 @@
   * somewhat messy...
     (for example, users should be removed some data when banished)
     (and signup of guests should be implemented)
+  * is main administrator identity checked just once? (it should)
 
 * FORMS
   * (auth) email/username & old password validation as generic functions  ¿?
@@ -33,6 +34,8 @@
   * form-wide errors?
   * user_forms macro is not very good (implies table, can be empty, ...)
   * validation unit tests?
+
+* revise everything is Unicode!
 
 * revise import system
 * flask_ or flask.ext. ??
@@ -45,11 +48,11 @@
 * flash messaging (also in decorators)
 * better dashboard definition (what happens if no username?)
 * revise helpers
-
+* list of forbidden usernames and slugs (urls!)
 ...
 
 is it the time to...
-* bootstrap?
+* bootstrap? -> from CDN?
 
 it is definitely the time to...
 * revise the docs!

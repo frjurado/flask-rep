@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<h2 class="post-title">{{ post.name }}</h2>
+
+<div class="post-head">
+  <img class="post-gravatar" src="{{ post.author.gravatar(64) }}" alt="{{ post.author.username }}">
+  <div class="post-data">
+    by {{ post.author.name or post.author.username }} <br>
+    {{ post.created }}
+  </div>
+</div>
+<div class="lead">{{ post.excerpt }}</div>
+<div class="post-body">
+{% if post.body_html %}
+  {{ post.body_html | safe }}
+{% else %}
+  {{ post.body_md }}
+{% endif %}
+</div>
+
+{% endblock %}

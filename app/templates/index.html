@@ -9,6 +9,10 @@
 <h2>Hello, Stranger!</h2>
 {% endif %}
 
+<div class="pagination">
+{{ macro.pagination_widget(pagination, 'main.index') }}
+</div>
 
+{{ macro.short_post(posts, current_user) }}
 
 {% endblock %}

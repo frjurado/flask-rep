@@ -4,7 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request
 from flask.ext.login import UserMixin, AnonymousUserMixin
+from sqlalchemy.ext.declarative import declared_attr
+from markdown import markdown
+import bleach
 from . import db, login_manager
+from helpers import urlize
 
 
 class Permission:
@@ -85,6 +89,8 @@ class User(UserMixin, db.Model):
     newsletter = db.Column(db.Boolean, default=False)
     # FK to roles
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    # backrefs
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -101,6 +107,29 @@ class User(UserMixin, db.Model):
     # string representation
     def __repr__(self):
         return '<User {0}>'.format(self.username)
+
+    # generate fake
+    @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed
+        import forgery_py
+
+        seed()
+        for i in range(count):
+            u = User(
+                email=forgery_py.internet.email_address(),
+                username=forgery_py.internet.user_name(True),
+                password=forgery_py.lorem_ipsum.word(),
+                confirmed=True,
+                name=forgery_py.name.full_name(),
+                member_since=forgery_py.date.date(True)
+            )
+            db.session.add(u)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
 
 
     # passwords
@@ -275,3 +304,103 @@ login_manager.anonymous_user = AnonymousUser
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+# CONTENT #
+###############################################################################
+
+def post_slug(context):
+    slug = urlize(context.current_parameters['name'])
+    similar_posts = Post.query.filter(Post.slug.like("{}%".format(slug))).count()
+    if similar_posts > 0:
+        slug = "{0}-{1}".format(slug, str(similar_posts + 1))
+    return slug
+
+# MIXINS
+class MainContentMixin(object):
+    created = db.Column(db.DateTime(), default=datetime.utcnow) # index?
+    modified = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = db.Column(db.Boolean, default=False)
+
+    @declared_attr
+    def author_id(cls):
+        return db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+
+class NameMixin(object):
+    name = db.Column(db.String(128))
+    slug = db.Column(db.String(128), default=post_slug, onupdate=post_slug)
+    excerpt = db.Column(db.Text)
+
+
+class ContentMixin(object):
+    body_md = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+
+    # md to html
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        tags = [ 'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em',
+            'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p' ]
+        target.body_html = bleach.linkify(
+            bleach.clean(
+                markdown(value, output_format='html'),
+                tags=tags,
+                strip=True
+            )
+        )
+
+# BASE CLASS
+class MenuItem(db.Model):
+    __tablename__ = 'menu_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String(64))
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'menu_items',
+        'polymorphic_on': type
+    }
+
+
+# HierarchicalMixin is still... missing!
+class Post(MainContentMixin, NameMixin, ContentMixin, MenuItem):
+    __tablename__ = 'posts'
+
+    id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), primary_key=True)
+
+    page = db.Column(db.Boolean, default=False)
+    comment_enabled = db.Column(db.Boolean, default=True)
+    comment_count = db.Column(db.Integer, default=0)
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'posts'
+    }
+
+    # string representation
+    def __repr__(self):
+        return '<Post {0}>'.format(self.name)
+
+    # generate fake
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+
+        users = [user for user in User.query.all() if user.can(Permission.WRITE_POST)]
+        user_count = len(users)
+        for i in range(count):
+            u = users[randint(0, user_count-1)]
+            p = Post(
+                name=forgery_py.lorem_ipsum.title(),
+                excerpt=forgery_py.lorem_ipsum.paragraph(),
+                body_md=forgery_py.lorem_ipsum.paragraphs(3),
+                status=True,
+                author=u
+            )
+            db.session.add(p)
+            db.session.commit()
+
+db.event.listen(Post.body_md, 'set', Post.on_changed_body)

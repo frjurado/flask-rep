@@ -3,7 +3,7 @@ from flask.ext.login import current_user, login_required, fresh_login_required
 from . import dash
 from .. import db
 from .forms import *
-from ..models import User, Role, Permission
+from ..models import User, Role, Permission, Post
 from ..decorators import *
 
 
@@ -116,3 +116,46 @@ def delete_account():
         flash("User {0} was deleted".format(user.username))
         db.session.delete(user)
     return redirect(url_for('dash.user_list'))
+
+####
+
+@dash.route('/post/write', methods=['GET', 'POST'])
+@permission_required(Permission.WRITE_POST)
+def write_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(
+            name=form.name.data,
+            excerpt=form.excerpt.data,
+            body_md=form.body.data,
+            author=current_user._get_current_object()
+        )
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('main.post', slug=post.slug))
+    return render_template('write_post.html', form=form)
+
+@dash.route('/post/edit/<slug>', methods=['GET', 'POST'])
+@editor_or_self_required
+def edit_post(slug, post):
+    form = PostForm()
+    if form.validate_on_submit():
+        post.name = form.name.data
+        post.excerpt = form.excerpt.data
+        post.body_md = form.body.data
+        db.session.add(post)
+        db.session.commit()
+        flash("Post updated")
+        return redirect(url_for('main.post', slug=post.slug))
+    form.name.data = post.name
+    form.excerpt.data = post.excerpt
+    form.body.data = post.body_md
+    return render_template('write_post.html', form=form)
+
+@dash.route('/post/list')
+@permission_required(Permission.WRITE_POST)
+def post_list():
+    my_posts = Post.query.filter_by(author=current_user).order_by(Post.created.desc()).all()
+    if current_user.can(Permission.EDIT_POST):
+        others_posts = Post.query.filter(Post.author!=current_user).order_by(Post.created.desc()).all()
+    return render_template('post_list.html', my_posts=my_posts, others_posts=others_posts)

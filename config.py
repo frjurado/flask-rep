@@ -17,6 +17,8 @@ class Config:
     MAIL_TEST_MAIL = os.environ.get('MAIL_TEST_MAIL') # recipient
     MAIL_SUBJECT_PREFIX = "[Test blog mail] - "
 
+    POSTS_PER_PAGE = 10
+
     @staticmethod
     def init_app(app):
         pass

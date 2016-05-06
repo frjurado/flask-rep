@@ -1,0 +1,13 @@
+{% extends 'layout.html' %}
+{% import 'macros.html' as macro %}
+
+{% block js %}
+{{ super() }}
+{{ pagedown.include_pagedown() }}
+{% endblock %}
+
+{% block content %}
+
+{{ macro.render_form(form) }}
+
+{% endblock %}

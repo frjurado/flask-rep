@@ -1,17 +1,21 @@
 {% extends 'layout.html' %}
 
-
 {% block content %}
 <div class="dashboard">
   <h2>Dashboard</h2>
-  <ul>
+  
+  <ul class="list-inline">
     <li><a href="{{ url_for('dash.user_profile', username=current_user.username) }}">Profile</a></li>
     {% if current_user.can(Permission.ADMINISTER) %}
     <li><a href="{{ url_for('dash.user_list') }}">Users</a></li>
     {% endif %}
+    {% if current_user.can(Permission.WRITE_POST) %}
+    <li><a href="{{ url_for('dash.post_list') }}">Post list</a></li>
+    <li><a href="{{ url_for('dash.write_post') }}">Write post</a></li>
+    {% endif %}
   </ul>
-  {% block dash_content %}
 
+  {% block dash_content %}
   {% endblock %}
 </div>
 {% endblock %}

@@ -22,8 +22,8 @@ def before_request():
     """
     Refresh last_seen attribute if authenticated.
     """
-    if current_user.is_authenticated:
-        current_user.ping()
+    # if current_user.is_authenticated:
+    #     current_user.ping()
 
 
 # main auth views

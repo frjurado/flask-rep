@@ -3,6 +3,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Regexp, Email, EqualTo, \
         ValidationError, StopValidation
+from ..main.forms import ButtonSubmitField
 from ..models import User
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
@@ -66,7 +67,7 @@ class SignupForm(Form):
     username = UsernameNewField()
     password = PasswordNewField()
     verify = VerifyField()
-    submit = SubmitField("Sign up")
+    submit = ButtonSubmitField("Sign up")
 
     def validate_email(self, field):
         if User.query.filter_by(email=field.data).first():
@@ -83,7 +84,7 @@ class LoginForm(Form):
     username = UsernameOldField()
     password = PasswordOldField()
     remember_me = BooleanField("Keep me logged in")
-    submit = SubmitField("Log in")
+    submit = ButtonSubmitField("Log in")
 
     def __init__(self, **kwargs):
         super(LoginForm, self).__init__(**kwargs)
@@ -106,7 +107,7 @@ class LoginForm(Form):
 # change data forms
 # ---------------------------------------------------------
 class ChangeForm(Form):
-    submit = SubmitField("Change")
+    submit = ButtonSubmitField("Change")
 
     def __init__(self, user, **kwargs):
         super(ChangeForm, self).__init__(**kwargs)
@@ -166,7 +167,7 @@ class ResetRequestForm(Form):
     heading = "Request account reset"
 
     email = EmailField()
-    submit = SubmitField('Reset')
+    submit = ButtonSubmitField('Reset')
 
     def __init__(self, **kwargs):
         super(ResetRequestForm, self).__init__(**kwargs)
@@ -185,7 +186,7 @@ class ResetForm(Form):
     username = UsernameNewField("New username")
     password = PasswordNewField("New password")
     verify = VerifyField()
-    submit = SubmitField('Reset password')
+    submit = ButtonSubmitField('Reset password')
 
     def __init__(self, token, **kwargs):
         super(ResetForm, self).__init__(**kwargs)

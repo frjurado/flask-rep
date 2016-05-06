@@ -3,12 +3,14 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.mail import Mail
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect
+from flask.ext.pagedown import PageDown
 from config import config
 
 
 db = SQLAlchemy()
 mail = Mail()
 csrf = CsrfProtect()
+pagedown = PageDown()
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -36,6 +38,7 @@ def create_app(config_name='default'):
     mail.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    pagedown.init_app(app)
 
     from .main import main
     from .auth import auth

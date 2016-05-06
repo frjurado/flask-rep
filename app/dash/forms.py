@@ -1,15 +1,17 @@
 from flask.ext.login import current_user
 from flask.ext.wtf import Form
-from wtforms import HiddenField, StringField, SelectField, BooleanField, SubmitField, Label
+from wtforms import HiddenField, StringField, SelectField, BooleanField, TextAreaField, SubmitField, Label
 from wtforms.widgets import HiddenInput
 from wtforms.validators import Required, Length, Regexp, Email, EqualTo, \
         ValidationError, StopValidation
+from flask.ext.pagedown.fields import PageDownField
+from ..main.forms import ButtonSubmitField
 from ..models import Permission, Role, User
 
 
 class AdminUsersForm(Form):
     username = HiddenField(validators=[Required()])
-    submit = SubmitField()
+    submit = ButtonSubmitField()
 
     def __init__(self, formdata=None, user=None, submit_label="Submit", **kwargs):
         super(AdminUsersForm, self).__init__(formdata, **kwargs)
@@ -98,4 +100,12 @@ class EditUserProfileForm(Form):
     name = StringField("Name")
     url = StringField("Url")
     newsletter = BooleanField("Do you want to receive our newsletter?")
-    submit = SubmitField("Save changes")
+    submit = ButtonSubmitField("Save changes")
+
+
+######################################
+class PostForm(Form):
+    name = StringField("Title", validators=[Required()])
+    excerpt = TextAreaField("Excerpt", validators=[Required()])
+    body = PageDownField("Body", validators=[Required()])
+    submit = ButtonSubmitField("Submitir :P")
