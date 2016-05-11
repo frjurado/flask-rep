@@ -158,4 +158,4 @@ def post_list():
     my_posts = Post.query.filter_by(author=current_user).order_by(Post.created.desc()).all()
     if current_user.can(Permission.EDIT_POST):
         others_posts = Post.query.filter(Post.author!=current_user).order_by(Post.created.desc()).all()
-    return render_template('post_list.html', my_posts=my_posts, others_posts=others_posts)
+    return render_template('_post_list.html', my_posts=my_posts, others_posts=others_posts)

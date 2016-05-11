@@ -1,3 +1,5 @@
+* MAIN
+  * for helpers: query or abort
 
 * avatars!!                                                       --
 * links to auth changes in YOUR profile                           --

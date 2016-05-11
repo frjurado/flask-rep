@@ -28,7 +28,7 @@
 
   {{ form.csrf_token }}
 
-  {% for field in form if field.type not in ("CSRFTokenField", "ButtonSubmitField") %}
+  {% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
     {% if field.type == "BooleanField" %}
     <div class="checkbox">
       {{ field() }}
@@ -44,7 +44,7 @@
     {% endif %}
   {% endfor %}
 
-  {{ form.submit() if form.submit }}
+  {{ form.submit(class="btn btn-primary") if form.submit }}
 
   {{ errors(form) }}
 </form>
@@ -70,65 +70,69 @@
 {% endif %}
 {% endmacro %}
 
-{% macro short_post(posts, current_user) %}
+{% macro short_posts(posts, current_user) %}
 <ul class="list-unstyled">
   {% for post in posts %}
   <li class="short-post">
+    <h2>
+      <a class="link-unstyled" href="{{ url_for('main.post', slug=post.slug) }}">{{ post.name }}</a>
+    </h2>
     <div class="short-post-head">
-      <img class="post-gravatar" src="{{ post.author.gravatar(32) }}" alt="{{ post.author.username }}">
-      <h2><a href="{{ url_for('main.post', slug=post.slug) }}">{{ post.name }}</a></h2>
-    </div>
-    <div class="short-post-data">
-      {{ post.author.name or post.author.username }} <br>
-      {{ post.created }} <br>
+      by
+      <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
+        {{ post.author.name or post.author.username }}</a>,
+      {{ post.created }}
       {% if post.author == current_user %}
-      <a class="btn btn-primary" href="{{ url_for('dash.edit_post', slug=post.slug) }}">Edit</a>
-      {% elif current_user.can(Permission.EDIT_POST) %}
-      <a class="btn btn-danger" href="{{ url_for('dash.edit_post', slug=post.slug) }}">Edit</a>
+       <br>
+       <a class="btn btn-primary" href="{{ url_for('dash.edit_post', slug=post.slug) }}">Edit</a>
       {% endif %}
     </div>
-    <div class="short-post-excerpt">{{ post.excerpt }}</div>
+    <div class="short-post-excerpt">
+      <p>{{ post.excerpt }}</p>
+    </div>
   </li>
   {% endfor %}
 </ul>
 {% endmacro %}
 
 {% macro pagination_widget(pagination, endpoint) %}
-<ul class="pagination">
+<nav class="text-center">
+  <ul class="pagination">
 
-  {% if pagination.has_prev %}
-  <li>
-    <a href="{{ url_for(endpoint, page=pagination.page-1, **kwargs) }}">
-  {% else %}
-  <li class="disabled">
-    <a href="#">
-  {% endif %}
-      &laquo;
-    </a>
-  </li>
-
-  {% for p in pagination.iter_pages() %}
-    {% if p %}
-      <li {{ "class=active" if p == pagination.page }}>
-        <a href="{{ url_for(endpoint, page=p, **kwargs) }}">{{ p }}</a>
-      </li>
+    {% if pagination.has_prev %}
+    <li>
+      <a href="{{ url_for(endpoint, page=pagination.page-1, **kwargs) }}">
     {% else %}
     <li class="disabled">
-      <a href="#">&hellip;</a>
-    </li>
+      <a href="#">
     {% endif %}
-  {% endfor %}
+        &laquo;
+      </a>
+    </li>
 
-  {% if pagination.has_next %}
-  <li>
-    <a href="{{ url_for(endpoint, page=pagination.page+1, **kwargs) }}">
-  {% else %}
-  <li class="disabled">
-    <a href="#">
-  {% endif %}
-      &raquo;
-    </a>
-  </li>
+    {% for p in pagination.iter_pages() %}
+      {% if p %}
+        <li {{ "class=active" if p == pagination.page }}>
+          <a href="{{ url_for(endpoint, page=p, **kwargs) }}">{{ p }}</a>
+        </li>
+      {% else %}
+      <li class="disabled">
+        <a href="#">&hellip;</a>
+      </li>
+      {% endif %}
+    {% endfor %}
 
-</ul>
+    {% if pagination.has_next %}
+    <li>
+      <a href="{{ url_for(endpoint, page=pagination.page+1, **kwargs) }}">
+    {% else %}
+    <li class="disabled">
+      <a href="#">
+    {% endif %}
+        &raquo;
+      </a>
+    </li>
+
+  </ul>
+</nav>
 {% endmacro %}

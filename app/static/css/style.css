@@ -4,8 +4,12 @@
 */
 
 h1, h2, p {
-  font-family: Helvetica;
-  color: #bbb;
+    font-family: Helvetica;
+}
+
+.link-unstyled {
+  color: inherit;
+  text-decoration: inherit;
 }
 
 .alert {
@@ -16,9 +20,11 @@ h1, h2, p {
 .checkbox > input {
   margin-left: 0 !important; /* HORRIBLE */
 }
+
 .header {
   background-color: #dfd;
 }
+
 .dashboard {
   margin: 10px 0;
   padding: 10px;
@@ -47,15 +53,19 @@ h1, h2, p {
   font-size: 1.2em;
 }
 
+/* SHORT POST */
 .short-post {
+  margin: 10px 0 10px -15px;
+  padding: 10px;
   background-color: #ddf;
 }
 
-.short-post-data {
-  color: #bbb;
+.short-post-head {
+  font-size: 0.9em;
+  margin: -10px 0 10px 0;
+  color: #aaa;
 }
 
 .short-post-excerpt {
-  margin: 1em 0;
-  font-size: 1.2em;
+
 }

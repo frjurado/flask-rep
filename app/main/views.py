@@ -1,26 +1,51 @@
-from flask import \
-    request, session, render_template, redirect, url_for, flash, current_app, abort
-from flask.ext.login import login_required
+from flask import request, render_template, current_app, abort
+from flask.views import View
 from . import main
-from .. import db
-from ..models import User, Role, Post
-from ..email import send_email
+from ..models import User, Post
 
 
-@main.route('/', methods=['GET', 'POST'])
-def index():
-    """
-    Simple index view.
-    """
-    page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.created.desc()).paginate(
-        page,
-        per_page=current_app.config['POSTS_PER_PAGE'],
-        error_out=True
-    )
-    posts = pagination.items
-    return render_template('index.html', pagination=pagination, posts=posts)
+class PostList(View):
+    title = None
 
+    def query(self, **kwargs):
+        raise NotImplementedError()
+
+    def render_template(self, context):
+        return render_template('post_list.html', **context)
+
+    def dispatch_request(self, **kwargs):
+        query = self.query(**kwargs).order_by(Post.created.desc())
+        page = request.args.get('page', 1, type=int)
+        pagination = query.paginate(
+            page,
+            per_page=current_app.config['POSTS_PER_PAGE'],
+            error_out=True
+        )
+        posts = pagination.items
+        context = { 'title': self.title,
+                    'pagination': pagination,
+                    'posts': posts }
+        return self.render_template(context)
+
+
+class IndexList(PostList):
+    def query(self, **kwargs):
+        return Post.query
+
+
+class AuthorList(PostList):
+    def query(self, **kwargs):
+        author = User.query.filter_by(username=kwargs['username']).first()
+        if author is None:
+            abort(404)
+        self.title = "Posts by {}".format(author.name or author.username)
+        return Post.query.filter_by(author=author)
+
+
+main.add_url_rule('/',
+                  view_func=IndexList.as_view('index'))
+main.add_url_rule('/author/<username>',
+                  view_func=AuthorList.as_view('author'))
 
 @main.route('/<slug>')
 def post(slug):
