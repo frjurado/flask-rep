@@ -1,22 +1,17 @@
-* MAIN
-  * for helpers: query or abort
+**MAIN - done!**
+  (future implementation of tag/category should be simple)
 
-* avatars!!                                                       --
-* links to auth changes in YOUR profile                           --
-  (and to role changes if administrator)                          --
-* status of "pending new email": confirmed or not?                --
-  (it's confirmed... on the old email)
-* what if you try to change ADMIN email?                          --
-  (you can't)
+**AUTH**
+  * revise token strategy for reset!
+  * crossing tokens? (possible? desirable?)
+
+**DASH**
+* revise macros, form macros and use modern system for rendering...
 * /delete-account view in auth to be destroyed                    --
   (set it to admin-or-self)                                       --
   (links?)                                                        ¿?
-
-* signup enabled in config                                        --
-  (should be done better for env variables)                       ¿?
-
-* different token strategy?                                       --
-* crossing tokens? (possible? desirable?)
+* revise before_request in auth
+* user_forms macro is not very good (implies table, can be empty, ...)
 
 * ROLES AND CONFIRMATION                                          !!
   * define better (there should be one more role)                 --
@@ -30,27 +25,29 @@
   * is main administrator identity checked just once? (it should)
 
 * FORMS
-  * (auth) email/username & old password validation as generic functions  ¿?
-  * StopValidation doesn't seem to work
   * (dash) revise afterwards
   * form-wide errors?
-  * user_forms macro is not very good (implies table, can be empty, ...)
-  * validation unit tests?
+  * StopValidation?
+
 
 * revise everything is Unicode!
-
 * revise import system
+* revise mailing system
 * flask_ or flask.ext. ??
 * rethink HTTP methods
 * (future problem) cascade deletes? what happens with posts/comments by deleted users?
   (maybe you should just not delete them, but the posts/comments first)
 * do you really want to...?
-* revise redirection strategy
+
   (check http://flask.pocoo.org/snippets/63/)
 * flash messaging (also in decorators)
 * better dashboard definition (what happens if no username?)
 * revise helpers
 * list of forbidden usernames and slugs (urls!)
+* validation unit tests???
+* revise configuration!!
+* Regexp subclasses?
+* redirection with classes?
 ...
 
 is it the time to...
@@ -59,6 +56,7 @@ is it the time to...
 it is definitely the time to...
 * revise the docs!
 * revise the unit tests!
+* even unit test... helpers!
 
 ...
 

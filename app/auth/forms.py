@@ -1,217 +1,177 @@
-from flask import current_app
-from flask.ext.wtf import Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import Required, Length, Regexp, Email, EqualTo, \
-        ValidationError, StopValidation
+from flask import abort, flash
+from wtforms import StringField, PasswordField, BooleanField, HiddenField
+from wtforms.validators import DataRequired, Regexp, Email, EqualTo
+from wtforms.validators import ValidationError
+from ..forms import BaseForm
 from ..models import User
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from ..helpers import serialize, load_token, invalid_token
 
 
-# custom fields
-# ---------------------------------------------------------
-class EmailField(StringField):
-    def __init__(
-            self,
-            label="Email",
-            validators=[Required(),Email()],
-            **kwargs):
-        super(EmailField, self).__init__(label=label,validators=validators,**kwargs)
+# validators
+def verify_email(form, field):
+    user = User.query.filter_by(email=field.data).first()
+    if user is None:
+        raise ValidationError("Unknown email address.")
+    form.user = user
+
+
+def verify_password(form, field):
+    if form.user is not None:
+        if not form.user.verify_password(field.data):
+            raise ValidationError("Invalid password")
+    else:
+        user = User.query.filter_by(username=form.username_old.data).first()
+        if user is None or not user.verify_password(field.data):
+            raise ValidationError("Invalid username or password")
+        form.user = user
+
+
+def verify_available(form, field):
+    user = User.query.filter(getattr(User, field.id) == field.data).first()
+    if form.user is not None and field.data == getattr(form.user, field.id):
+        if not isinstance(form, ResetForm):
+            raise ValidationError("That's already your {}.".format(field.id))
+    elif user:
+        raise ValidationError("{} already in use.".format(field.id.capitalize()))
+
+
+# fields
+class EmailOldField(StringField):
+    def __init__(self, label="Email", **kwargs):
+        super(EmailOldField, self).__init__(
+            label = label,
+            validators = [DataRequired(), Email(), verify_email],
+            **kwargs)
+
+
+class EmailNewField(StringField):
+    def __init__(self, label="Email", **kwargs):
+        super(EmailNewField, self).__init__(
+            label = label,
+            validators = [DataRequired(), Email(), verify_available],
+            **kwargs)
+
 
 class UsernameOldField(StringField):
-    def __init__(self, label="Username", validators=[Required()], **kwargs):
-        super(UsernameOldField, self).__init__(label=label,validators=validators,**kwargs)
+    def __init__(self, label="Username", **kwargs):
+        super(UsernameOldField, self).__init__(
+            label = label,
+            validators = [DataRequired()],
+            **kwargs)
+
 
 class UsernameNewField(StringField):
-    def __init__(
-            self,
-            label="Username",
-            validators=[Required(),Length(1,64),
-                Regexp('[A-Za-z0-9_.]+',0,
-                "Username must only have letters, numbers, dots and underscores."
-            )],
-            **kwargs):
-        super(UsernameNewField, self).__init__(label=label,validators=validators,**kwargs)
+    def __init__(self, label="Username", **kwargs):
+        regexp = """[A-Za-z0-9_.]{3,64}"""
+        message = """
+        Username must be between 3 and 64 characters,
+        and must only contain letters, numbers, dots and underscores.
+        """
+        validators=[DataRequired(), Regexp(regexp,0,message), verify_available]
+        super(UsernameNewField, self).__init__(
+            label = label,
+            validators = validators,
+            **kwargs)
+
 
 class PasswordOldField(PasswordField):
-    def __init__(self, label="Password", validators=[Required()], **kwargs):
-        super(PasswordOldField, self).__init__(label=label,validators=validators,**kwargs)
+    def __init__(self, label="Password", **kwargs):
+        super(PasswordOldField, self).__init__(
+            label = label,
+            validators = [DataRequired(), verify_password],
+            **kwargs)
+
 
 class PasswordNewField(PasswordField):
-    def __init__(
-            self,
-            label="Password",
-            validators=[Required(),Length(8,64),
-                Regexp('[A-Za-z0-9_.]+',0,
-                "Password must only have letters, numbers, dots and underscores."
-                # you should really check it has them all?
-            )],
-            **kwargs):
-        super(PasswordNewField, self).__init__(label=label,validators=validators,**kwargs)
-
-class VerifyField(PasswordField):
-    def __init__(
-            self,
-            label="Confirm password",
-            validators=[Required(),EqualTo('password', "Passwords don't match.")],
-            **kwargs):
-        super(VerifyField, self).__init__(label=label,validators=validators,**kwargs)
+    def __init__(self, label="Password", **kwargs):
+        regexp = """^(?=.*[a-zA-Z])(?=.*\d)(?=.*[-!$%^&*()_+|~=`{}\[\]:";'<>?,.\/]).{8,64}$"""
+        message = """
+        Password must be between 8 and 64 characters,
+        and must contain at least one letter, digit and symbol.
+        """
+        validators = [DataRequired(), Regexp(regexp,0,message)]
+        super(PasswordNewField, self).__init__(
+            label = label,
+            validators = validators,
+            **kwargs)
 
 
-# main forms
-# ---------------------------------------------------------
-class SignupForm(Form):
-    heading = "Sign up"
-
-    email = EmailField()
-    username = UsernameNewField()
-    password = PasswordNewField()
-    verify = VerifyField()
-    submit = SubmitField("Sign up")
-
-    def validate_email(self, field):
-        if User.query.filter_by(email=field.data).first():
-            raise ValidationError("Email already in use.")
-
-    def validate_username(self, field):
-        if User.query.filter_by(username=field.data).first():
-            raise ValidationError("Username already in use.")
+class PasswordConfirmField(PasswordField):
+    def __init__(self, label="Confirm password", **kwargs):
+        validators = [DataRequired(), EqualTo("password", "Passwords don't match.")]
+        super(PasswordConfirmField, self).__init__(
+            label = label,
+            validators = validators,
+            **kwargs)
 
 
-class LoginForm(Form):
-    heading = "Log in"
-
-    username = UsernameOldField()
-    password = PasswordOldField()
-    remember_me = BooleanField("Keep me logged in")
-    submit = SubmitField("Log in")
-
+# forms
+class UserForm(BaseForm):
     def __init__(self, **kwargs):
-        super(LoginForm, self).__init__(**kwargs)
+        super(UserForm, self).__init__(**kwargs)
         self.user = None
 
-    def validate(self):
-        rv = Form.validate(self)
-        if not rv:
-            return False
 
-        user = User.query.filter_by(username=self.username.data).first()
-        if user and user.is_member() and user.verify_password(self.password.data):
-            self.user = user
-            return True
-        else:
-            self.password.errors.append("Invalid username or password.")
-            return False
-
-
-# change data forms
-# ---------------------------------------------------------
-class ChangeForm(Form):
-    submit = SubmitField("Change")
-
+class ChangeUserForm(BaseForm):
+    _submit = "Change"
     def __init__(self, user, **kwargs):
-        super(ChangeForm, self).__init__(**kwargs)
+        super(ChangeUserForm, self).__init__(**kwargs)
         self.user = user
 
-class ChangeEmailForm(ChangeForm):
-    heading = "Change email"
 
-    email = EmailField("New email")
-    password = PasswordOldField()
-
-    def validate_email(self, field):
-        if field.data == self.user.email:
-            raise ValidationError("That's already your email.")
-        elif User.query.filter_by(email=field.data).first():
-            raise ValidationError("Email already in use.")
-
-    def validate_password(self, field):
-        if not self.user.verify_password(field.data):
-            raise ValidationError("Invalid password.")
+class SignupForm(UserForm):
+    title = "Sign up"
+    email = EmailNewField()
+    username = UsernameNewField()
+    password = PasswordNewField()
+    password_confirm = PasswordConfirmField()
 
 
-class ChangeUsernameForm(ChangeForm):
-    heading = "Change username"
+class LoginForm(UserForm):
+    title = "Log in"
+    username_old = UsernameOldField()
+    password_old = PasswordOldField()
+    remember_me = BooleanField("Keep me logged in")
 
+
+class ChangeEmailForm(ChangeUserForm):
+    title = "Change email"
+    email = EmailNewField("New email")
+    password_old = PasswordOldField()
+
+
+class ChangeUsernameForm(ChangeUserForm):
+    title = "Change username"
     username = UsernameNewField("New username")
-    password = PasswordOldField()
-
-    def validate_username(self, field):
-        if field.data == self.user.username:
-            raise ValidationError("That's already your username.")
-        elif User.query.filter_by(username=field.data).first():
-            raise ValidationError("Username already in use.")
-
-    def validate_password(self, field):
-        if not self.user.verify_password(field.data):
-            raise ValidationError("Invalid password.")
+    password_old = PasswordOldField()
 
 
-class ChangePasswordForm(ChangeForm):
-    heading = "Change password"
-
-    password = PasswordOldField("Old password")
-    password_new = PasswordNewField("New password")
-    verify_new = VerifyField(
-        "Verify new password",
-        validators=[Required(),EqualTo('password_new', "Passwords don't match.")]
-    )
-
-    def validate_password(self, field):
-        if not self.user.verify_password(field.data):
-            raise ValidationError("Invalid password.")
-
-# reset forms
-# ---------------------------------------------------------
-class ResetRequestForm(Form):
-    heading = "Request account reset"
-
-    email = EmailField()
-    submit = SubmitField('Reset')
-
-    def __init__(self, **kwargs):
-        super(ResetRequestForm, self).__init__(**kwargs)
-        self.user = None
-
-    def validate_email(self, field):
-        self.user = User.query.filter_by(email=field.data).first()
-        if self.user is None:
-            raise ValidationError("Unknown email address.")
+class ChangePasswordForm(ChangeUserForm):
+    title = "Change password"
+    password_old = PasswordOldField("Old password")
+    password = PasswordNewField("New password")
+    password_confirm = PasswordConfirmField("Confirm new password")
 
 
-class ResetForm(Form):
-    heading = "Reset username and password"
+class ResetRequestForm(UserForm):
+    title = "Request account reset"
+    _submit = "Reset"
+    email_old = EmailOldField()
 
-    email = EmailField("Enter your email again, please")
+
+class ResetForm(UserForm):
+    title = "Reset username and password"
+    _submit = "Reset"
     username = UsernameNewField("New username")
     password = PasswordNewField("New password")
-    verify = VerifyField()
-    submit = SubmitField('Reset password')
+    password_confirm = PasswordConfirmField()
 
     def __init__(self, token, **kwargs):
         super(ResetForm, self).__init__(**kwargs)
-        self.user = None
-        self.token = token
-
-    def validate(self):
-        rv = Form.validate(self)
-        if not rv:
-            return False
-
-        self.user = User.query.filter_by(email=self.email.data).first()
-        if self.user is None or not self.user.is_member():
-            self.email.errors.append("Invalid email.")
-            return False
-        if self.username.data != self.user.username and \
-                User.query.filter_by(username=self.username.data).first():
-            self.username.errors.append("Username already in use.")
-            return False
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(self.token)
-        except:
-            self.email.errors.append("Invalid token.")
-            return False
-        if self.user != User.query.get(data.get('reset')):
-            self.email.errors.append("Invalid token.")
-            return False
-        return True
+        s = serialize()
+        data = load_token(s, token)
+        if data is None:
+            invalid_token()
+        self.user = User.query.get(data.get('reset'))
+        if self.user is None:
+            invalid_token()

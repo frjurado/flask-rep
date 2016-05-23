@@ -4,13 +4,15 @@
 {% block content %}
 
 {% if title %}
-<h2>{{ title }}</h2>
+  <h2>{{ title }}</h2>
 {% endif %}
 
-{{ pagination_widget(pagination, 'main.index') }}
-
-{{ short_posts(posts, current_user) }}
-
-{{ pagination_widget(pagination, 'main.index') }}
+{% if posts == [] %}
+  <p>No posts here.</p>
+{% else %}
+  {{ pagination_widget(pagination, 'main.index') }}
+  {{ short_posts(posts, current_user) }}
+  {{ pagination_widget(pagination, 'main.index') }}
+{% endif %}
 
 {% endblock %}

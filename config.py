@@ -3,20 +3,20 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or "83oG69H1D11RBF7tEq75qU25oEA1mxmM"
+    NOT_SO_SECRET_KEY = "pFeZmuXj6t1cZP70gnNS7IS4zhdRvwY7" # don't use this!
+    SECRET_KEY = os.environ.get('SECRET_KEY') or NOT_SO_SECRET_KEY
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
-    SIGNUP_ENABLED = True
 
     MAIL_SERVER = "smtp.googlemail.com"
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    ADMIN = os.environ.get('ADMIN') # main administrator mail
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') # sender
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_TEST_MAIL = os.environ.get('MAIL_TEST_MAIL') # recipient
     MAIL_SUBJECT_PREFIX = "[Test blog mail] - "
 
+    ADMIN = os.environ.get('ADMIN') # main administrator mail
+    SIGNUP_ENABLED = True
     POSTS_PER_PAGE = 10
 
     @staticmethod
@@ -28,7 +28,6 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data-dev.sqlite')
-    #SIGNUP_ENABLED = False
 
 
 class TestingConfig(Config):
@@ -40,7 +39,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-
+    SIGNUP_ENABLED = os.environ.get('SIGNUP_ENABLED') or False
 
 config = {
     'development': DevelopmentConfig,

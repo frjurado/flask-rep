@@ -1,56 +1,3 @@
-
-
-{% macro errors(form) %}
-  {% if form.errors %}
-  <p class="alert">
-    {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-      {% for error in field_errors %}
-        {{ form[field_name].label }}: {{ error }}<br>
-      {% endfor %}
-    {% endfor %}
-  </p>
-  {% endif %}
-{% endmacro %}
-
-
-{% macro render_form( form,
-                      method="POST",
-                      action=None,
-                      vertical=True,
-                      use_label=True ) %}
-<form {{ 'class=form-inline' if not vertical }}
-      {{ 'action={}'.format(action) if action }}
-      method={{ method }}>
-
-  {% if form.heading %}
-  <h2>{{ form.heading }}</h2>
-  {% endif %}
-
-  {{ form.csrf_token }}
-
-  {% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
-    {% if field.type == "BooleanField" %}
-    <div class="checkbox">
-      {{ field() }}
-      {{ field.label }}
-    </div>
-    {% elif use_label %}
-      <div class="form-group">
-        {{ field.label }}:
-        {{ field(class="form-control") }}
-      </div>
-    {% else %}
-      {{ field(class="form-control") }}
-    {% endif %}
-  {% endfor %}
-
-  {{ form.submit(class="btn btn-primary") if form.submit }}
-
-  {{ errors(form) }}
-</form>
-{% endmacro %}
-
-
 {% macro h_form( form,
                  method="POST",
                  action=None) %}
@@ -69,6 +16,14 @@
   <td>{{ h_form(user.banish_form, action=url_for('dash.banish_user')) }}</td>
 {% endif %}
 {% endmacro %}
+
+
+
+
+
+
+
+
 
 {% macro short_posts(posts, current_user) %}
 <ul class="list-unstyled">

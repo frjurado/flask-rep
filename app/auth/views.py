@@ -1,33 +1,23 @@
-from flask import current_app, request, render_template, redirect, url_for, flash, abort
+from flask import request, render_template, redirect, url_for, flash
 from flask.ext.login import current_user, login_user, logout_user, \
         login_required, fresh_login_required
-from . import auth
-from .. import db
 import email
+from . import auth
 from .forms import *
+from .. import db
 from ..models import User
 from ..decorators import signup_enabled, anonymous_required, main_admin_excluded
+from ..helpers import invalid_token, next_or_index, to_dashboard
 
 
-# helper functions (somewhere else?)
-# ---------------------------------------------------------
-def next_or_index():
-    return redirect(request.args.get('next') or url_for('main.index'))
-
-
-# before request
-# ---------------------------------------------------------
-@auth.before_app_request
-def before_request():
-    """
-    Refresh last_seen attribute if authenticated.
-    """
-    # if current_user.is_authenticated:
-    #     current_user.ping()
+def auth_form(form, login=False, signup=False):
+    return render_template('auth_form.html',
+                           form = form,
+                           login = login,
+                           signup = signup)
 
 
 # main auth views
-# ---------------------------------------------------------
 @auth.route('/signup', methods=['GET', 'POST'])
 @signup_enabled
 @anonymous_required
@@ -48,8 +38,9 @@ def signup():
         email.confirm(user, token)
         flash("A confirmation link has been sent to you. Please check email.")
         login_user(user)
-        return redirect(url_for('dash.dashboard'))
-    return render_template('signup.html', form=form)
+        return to_dashboard()
+    return auth_form(form, signup=True)
+
 
 @auth.route('/login', methods=['GET', 'POST'])
 @anonymous_required
@@ -63,8 +54,9 @@ def login():
     if form.validate_on_submit():
         login_user(form.user, form.remember_me.data)
         flash("Welcome back!")
-        return redirect(url_for('dash.dashboard'))
-    return render_template('login.html', form=form)
+        return to_dashboard()
+    return auth_form(form, login=True)
+
 
 @auth.route('/logout')
 @login_required
@@ -75,7 +67,6 @@ def logout():
 
 
 # confirmation
-# ---------------------------------------------------------
 @auth.route('/confirm')
 @login_required
 def resend_confirmation():
@@ -88,7 +79,8 @@ def resend_confirmation():
     token = current_user.generate_confirmation_token()
     email.confirm(current_user, token)
     flash("A new confirmation link has been sent to you. Please check email.")
-    return next_or_index()
+    return to_dashboard()
+
 
 @auth.route('/confirm/<token>')
 @login_required
@@ -99,15 +91,13 @@ def confirm(token):
     """
     if current_user.confirmed:
         return next_or_index()
-    if current_user.confirm(token):
-        flash("You have confirmed your account. Welcome!")
-    else:
-        flash("The confirmation link is invalid or has expired.")
-    return next_or_index()
+    if not current_user.confirm(token):
+        invalid_token()
+    flash("You have confirmed your account. Welcome!")
+    return to_dashboard()
 
 
-# email change
-# ---------------------------------------------------------
+# data changes
 @auth.route('/change-email', methods=['GET', 'POST'])
 @fresh_login_required
 @main_admin_excluded
@@ -122,8 +112,9 @@ def change_email_request():
         token = current_user.generate_email_change_token(new_email)
         email.change_email(current_user, new_email, token)
         flash("A confirmation link has been sent to your new email.")
-        return next_or_index()
-    return render_template('simple_form.html', form=form)
+        return to_dashboard()
+    return auth_form(form)
+
 
 @auth.route('/change-email/<token>')
 @fresh_login_required
@@ -131,51 +122,39 @@ def change_email_request():
 def change_email(token):
     """
     args: token.
-    Check token and actually refreshing your email.
+    Check token and actually refresh your email.
     """
-    if current_user.change_email(token):
-        flash("Your new email has been confirmed.")
-    else:
-        flash("Invalid or expired token.")
-    return next_or_index()
+    if not current_user.change_email(token):
+        invalid_token()
+    flash("Your new email has been confirmed.")
+    return to_dashboard()
 
 
-# username change
-# ---------------------------------------------------------
 @auth.route('/change-username', methods=['GET', 'POST'])
 @fresh_login_required
 def change_username():
-    """
-    Change your username.
-    """
     form = ChangeUsernameForm(current_user)
     if form.validate_on_submit():
         current_user.username = form.username.data
         db.session.add(current_user)
         flash("You changed your username.")
-        return next_or_index()
-    return render_template('simple_form.html', form=form)
+        return to_dashboard()
+    return auth_form(form)
 
 
-# password change
-# ---------------------------------------------------------
 @auth.route('/change-password', methods=['GET', 'POST'])
 @fresh_login_required
 def change_password():
-    """
-    Change your password.
-    """
     form = ChangePasswordForm(current_user)
     if form.validate_on_submit():
-        current_user.password = form.password_new.data
+        current_user.password = form.password.data
         db.session.add(current_user)
         flash("You changed your password.")
-        return next_or_index()
-    return render_template('simple_form.html', form=form)
+        return to_dashboard()
+    return auth_form(form)
 
 
 # username & password reset
-# ---------------------------------------------------------
 @auth.route('/reset', methods=['GET', 'POST'])
 @anonymous_required
 def reset_request():
@@ -188,7 +167,8 @@ def reset_request():
         email.reset(form.user, token)
         flash("An email with instructions has been sent to you.")
         return next_or_index()
-    return render_template('simple_form.html', form=form)
+    return auth_form(form)
+
 
 @auth.route('/reset/<token>', methods=['GET', 'POST'])
 @anonymous_required
@@ -202,5 +182,5 @@ def reset(token):
         form.user.reset(form.username.data, form.password.data)
         login_user(form.user)
         flash("Your username and password have been updated.")
-        return next_or_index()
-    return render_template('simple_form.html', form=form)
+        return to_dashboard()
+    return auth_form(form)

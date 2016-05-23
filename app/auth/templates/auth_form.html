@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+{{ form() | safe }}
+
+{% if login %}
+  {% if config['SIGNUP_ENABLED'] %}
+  <p>
+    New user?
+    <a href="{{ url_for('auth.signup') }}">Sign up</a> first.
+  </p>
+  {% endif %}
+
+  <p>
+    Forgot your username or password?
+    <a href="{{ url_for('auth.reset_request') }}">Get new ones</a>.
+  </p>
+{% elif signup %}
+  <p>Already a user? <a href="{{ url_for('auth.login') }}">Log in</a> then.</p>
+{% endif %}
+
+{% endblock %}

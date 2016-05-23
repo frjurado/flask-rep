@@ -2,10 +2,13 @@ from flask import request, render_template, current_app, abort
 from flask.views import View
 from . import main
 from ..models import User, Post
+from ..helpers import get_or_404
 
 
 class PostList(View):
-    title = None
+    def __init__(self, **kwargs):
+        super(PostList, self).__init__(**kwargs)
+        self.title = None
 
     def query(self, **kwargs):
         raise NotImplementedError()
@@ -35,9 +38,7 @@ class IndexList(PostList):
 
 class AuthorList(PostList):
     def query(self, **kwargs):
-        author = User.query.filter_by(username=kwargs['username']).first()
-        if author is None:
-            abort(404)
+        author = get_or_404(User, User.username == kwargs['username'])
         self.title = "Posts by {}".format(author.name or author.username)
         return Post.query.filter_by(author=author)
 
@@ -49,7 +50,5 @@ main.add_url_rule('/author/<username>',
 
 @main.route('/<slug>')
 def post(slug):
-    post = Post.query.filter_by(slug=slug).first()
-    if post is None:
-        abort(404)
+    post = get_or_404(Post, Post.slug == slug)
     return render_template('post.html', post=post)

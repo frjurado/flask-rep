@@ -1,14 +1,13 @@
 from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request
 from flask.ext.login import UserMixin, AnonymousUserMixin
 from sqlalchemy.ext.declarative import declared_attr
 from markdown import markdown
 import bleach
 from . import db, login_manager
-from helpers import urlize
+from helpers import urlize, serialize, load_token
 
 
 class Permission:
@@ -101,8 +100,7 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(permissions=0x03).first()
             else:
                 self.role = Role.query.filter_by(default=True).first()
-        if self.email:
-            self.set_avatar_hash()
+        self.set_avatar_hash()
 
     # string representation
     def __repr__(self):
@@ -117,23 +115,19 @@ class User(UserMixin, db.Model):
 
         seed()
         for i in range(count):
-            u = User(
-                email=forgery_py.internet.email_address(),
-                username=forgery_py.internet.user_name(True),
-                password=forgery_py.lorem_ipsum.word(),
-                confirmed=True,
-                name=forgery_py.name.full_name(),
-                member_since=forgery_py.date.date(True)
-            )
+            u = User( email=forgery_py.internet.email_address(),
+                      username=forgery_py.internet.user_name(True),
+                      password=forgery_py.lorem_ipsum.word(),
+                      confirmed=True,
+                      name=forgery_py.name.full_name(),
+                      member_since=forgery_py.date.date(True) )
             db.session.add(u)
             try:
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
 
-
     # passwords
-    # ---------
     @property
     def password(self):
         raise AttributeError("password is not a readable attribute")
@@ -145,48 +139,36 @@ class User(UserMixin, db.Model):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-
     # token generation and checking
-    # -----------------------------
-    def _serialize(self, expiration=None):
-        return Serializer(current_app.config['SECRET_KEY'], expiration)
-
     def generate_confirmation_token(self, expiration=3600):
-        s = self._serialize(expiration)
+        s = serialize(expiration)
         return s.dumps({'confirm': self.id})
 
     def generate_email_change_token(self, new_email, expiration=3600):
-        s = self._serialize(expiration)
+        s = serialize(expiration)
         return s.dumps({'change_email': self.id, 'new_email': new_email})
 
     def generate_reset_token(self, expiration=3600):
-        s = self._serialize(expiration)
+        s = serialize(expiration)
         return s.dumps({'reset': self.id})
 
     def confirm(self, token):
-        s = self._serialize()
-        try:
-            data = s.loads(token)
-        except:
-            return False
-        if data.get('confirm') != self.id:
+        s = serialize()
+        data = load_token(s, token)
+        if data is None or data.get('confirm') != self.id:
             return False
         self.confirmed = True
         db.session.add(self)
         return True
 
     def change_email(self, token):
-        s = self._serialize()
-        try:
-            data = s.loads(token)
-        except:
-            return False
-        if data.get('change_email') != self.id:
+        s = serialize()
+        data = load_token(s, token)
+        if data is None or data.get('change_email') != self.id:
             return False
         new_email = data.get('new_email')
-        if new_email is None:
-            return False
-        if self.query.filter_by(email=new_email).first() is not None:
+        if new_email is None \
+                or self.query.filter_by(email=new_email).first() is not None:
             return False
         self.email = new_email
         self.set_avatar_hash()
@@ -199,9 +181,7 @@ class User(UserMixin, db.Model):
         self.password = new_password
         db.session.add(self)
 
-
     # gravatar
-    # --------
     def set_avatar_hash(self):
         self.avatar_hash = hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
         return self.avatar_hash
@@ -219,15 +199,13 @@ class User(UserMixin, db.Model):
             rating=rating
         )
 
-
-    # refresh last_seen (before_app_request)
+    # refresh last_seen (before_app_request) ??
     # --------------------------------------
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
-
-    # check role, permissions or membership
+    # check role, permissions or membership -- revise please!!
     # -------------------------------------
     def get_role(self):
         return self.role.name or None
@@ -244,8 +222,7 @@ class User(UserMixin, db.Model):
     def is_main_administrator(self):
         return self.can(Permission.ADMINISTER) and not self.can(Permission.ROLE)
 
-
-    # assign roles, block, unblock, admit and banish
+    # assign roles, block, unblock, admit and banish -- revise please!!
     # ----------------------------------------------
     def _role(self, role):
         self.role = role
@@ -393,13 +370,11 @@ class Post(MainContentMixin, NameMixin, ContentMixin, MenuItem):
         user_count = len(users)
         for i in range(count):
             u = users[randint(0, user_count-1)]
-            p = Post(
-                name=forgery_py.lorem_ipsum.title(),
-                excerpt=forgery_py.lorem_ipsum.paragraph(),
-                body_md=forgery_py.lorem_ipsum.paragraphs(3),
-                status=True,
-                author=u
-            )
+            p = Post( name=forgery_py.lorem_ipsum.title(),
+                      excerpt=forgery_py.lorem_ipsum.paragraph(),
+                      body_md=forgery_py.lorem_ipsum.paragraphs(3),
+                      status=True,
+                      author=u )
             db.session.add(p)
             db.session.commit()
 

@@ -4,7 +4,6 @@ from flask.ext.mail import Mail
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect
 from flask.ext.pagedown import PageDown
-from flask.ext.debugtoolbar import DebugToolbarExtension
 from config import config
 
 
@@ -12,7 +11,6 @@ db = SQLAlchemy()
 mail = Mail()
 csrf = CsrfProtect()
 pagedown = PageDown()
-toolbar = DebugToolbarExtension()
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -41,7 +39,6 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
     csrf.init_app(app)
     pagedown.init_app(app)
-    toolbar.init_app(app)
 
     from .main import main
     from .auth import auth
