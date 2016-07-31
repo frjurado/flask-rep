@@ -1,15 +1,21 @@
-from flask import render_template
+from flask import Markup, render_template, url_for
 from flask.ext.wtf import Form
 from wtforms import SubmitField, Label
-from wtforms.validators import Required, Length
-from wtforms.widgets import HTMLString
+
 
 class BaseForm(Form):
     """
     Base class for all forms in the blog.
     """
-    title = None
+    _vertical = True
+    _labelled = True
+    _small = False
+    _danger = False
+
+    _endpoint = None
+    _endpoint_kwargs = {}
     _submit = None
+    title = None
     submit = SubmitField()
 
     def __init__(self, **kwargs):
@@ -17,11 +23,23 @@ class BaseForm(Form):
         submit_label = self._submit or self.title or "Submit"
         self.submit.label = Label("submit", submit_label)
 
+    def _action(self):
+        if self._endpoint is not None:
+            return url_for(self._endpoint, **self._endpoint_kwargs)
+        return None
+
     def __call__(self, method="POST", action=None,
-                 vertical=True, labelled=True):
-        return render_template('form.html',
-                               form=self,
-                               method=method,
-                               action=action,
-                               vertical=vertical,
-                               labelled=labelled)
+                 vertical=None, labelled=None, small=None, danger=None):
+        action = action or self._action()
+        vertical = vertical or self._vertical
+        labelled = labelled or self._labelled
+        small = small or self._small
+        danger = danger or self._danger
+        return Markup( render_template( 'form.html',
+                                        form = self,
+                                        method = method,
+                                        action = action,
+                                        vertical = vertical,
+                                        labelled = labelled,
+                                        small = small ,
+                                        danger = danger ) )

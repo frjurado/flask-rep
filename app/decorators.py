@@ -7,7 +7,7 @@ from .models import Permission, Post
 def signup_enabled(f):
     """
     Use as a decorator to block signup view if
-    'SIGNUP_ENABLED' is set to False.
+    SIGNUP_ENABLED is set to False.
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -31,27 +31,8 @@ def anonymous_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def member_required(f):
-    """
-    Use as a decorator to restrict views to members.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_member():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
 
-def confirmation_required(f):
-    """
-    Use as a decorator to restrict views to confirmed users.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.confirmed:
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
+#   * * *
 
 def permission_required(permission):
     """
@@ -67,12 +48,27 @@ def permission_required(permission):
         return decorated_function
     return decorator
 
+
 def admin_required(f):
     """
     Specific permission-based decorator for
     administrator (and main administrator) exclusive views.
     """
     return permission_required(Permission.ADMINISTER)(f)
+
+
+def self_required(f):
+    """
+    Specific permission-based decorator
+    for self-exclusive views.
+    """
+    @wraps(f)
+    def decorated_function(username, *args, **kwargs):
+        if current_user.username != username:
+            abort(403)
+        return f(username, *args, **kwargs)
+    return decorated_function
+
 
 def admin_or_self_required(f):
     """
@@ -86,27 +82,6 @@ def admin_or_self_required(f):
         return f(username, *args, **kwargs)
     return decorated_function
 
-def main_admin_required(f):
-    """
-    Specific decorator for main administrator-exclusive views.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_main_administrator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
-
-def main_admin_excluded(f): ## ?
-    """
-    Specific decorator for main administrator-excluded views.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if current_user.is_main_administrator():
-            abort(403)
-        return f(*args, **kwargs)
-    return decorated_function
 
 def editor_or_self_required(f):
     """
@@ -115,11 +90,11 @@ def editor_or_self_required(f):
     """
     @wraps(f)
     def decorated_function(slug, *args, **kwargs):
-        print "slug is: " + slug
         post = Post.query.filter_by(slug=slug).first()
         if post is None:
             abort(404)
-        if not current_user.can(Permission.EDIT_POST) and not current_user == post.author:
+        if not current_user.can(Permission.EDIT_POST) \
+                and not current_user == post.author:
             abort(403)
         return f(slug, post, *args, **kwargs)
     return decorated_function

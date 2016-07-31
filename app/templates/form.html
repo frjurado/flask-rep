@@ -1,5 +1,5 @@
 <form {{ 'action={}'.format(action) if action }} method={{ method }}
-      {{ 'class=form-inline' if not vertical }} >
+      {{ 'class=form-inline' if not vertical }}>
 
   {% if form.title %}
   <h2>{{ form.title }}</h2>
@@ -33,6 +33,10 @@
     {% endif %}
   {% endfor %}
 
+  {% if danger %}
+  {{ form.submit(class="btn btn-danger") }}
+  {% else %}
   {{ form.submit(class="btn btn-primary") }}
+  {% endif %}
 
 </form>

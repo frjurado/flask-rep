@@ -1,13 +1,12 @@
-from flask import abort, flash
-from wtforms import StringField, PasswordField, BooleanField, HiddenField
-from wtforms.validators import DataRequired, Regexp, Email, EqualTo
+from wtforms import StringField, PasswordField, BooleanField
+from wtforms.validators import InputRequired, Regexp, Email, EqualTo
 from wtforms.validators import ValidationError
 from ..forms import BaseForm
 from ..models import User
 from ..helpers import serialize, load_token, invalid_token
 
 
-# validators
+# validators ------------------------------------------------------------------
 def verify_email(form, field):
     user = User.query.filter_by(email=field.data).first()
     if user is None:
@@ -35,12 +34,12 @@ def verify_available(form, field):
         raise ValidationError("{} already in use.".format(field.id.capitalize()))
 
 
-# fields
+# fields ----------------------------------------------------------------------
 class EmailOldField(StringField):
     def __init__(self, label="Email", **kwargs):
         super(EmailOldField, self).__init__(
             label = label,
-            validators = [DataRequired(), Email(), verify_email],
+            validators = [InputRequired(), Email(), verify_email],
             **kwargs)
 
 
@@ -48,7 +47,7 @@ class EmailNewField(StringField):
     def __init__(self, label="Email", **kwargs):
         super(EmailNewField, self).__init__(
             label = label,
-            validators = [DataRequired(), Email(), verify_available],
+            validators = [InputRequired(), Email(), verify_available],
             **kwargs)
 
 
@@ -56,7 +55,7 @@ class UsernameOldField(StringField):
     def __init__(self, label="Username", **kwargs):
         super(UsernameOldField, self).__init__(
             label = label,
-            validators = [DataRequired()],
+            validators = [InputRequired()],
             **kwargs)
 
 
@@ -67,7 +66,7 @@ class UsernameNewField(StringField):
         Username must be between 3 and 64 characters,
         and must only contain letters, numbers, dots and underscores.
         """
-        validators=[DataRequired(), Regexp(regexp,0,message), verify_available]
+        validators=[InputRequired(), Regexp(regexp,0,message), verify_available]
         super(UsernameNewField, self).__init__(
             label = label,
             validators = validators,
@@ -78,7 +77,7 @@ class PasswordOldField(PasswordField):
     def __init__(self, label="Password", **kwargs):
         super(PasswordOldField, self).__init__(
             label = label,
-            validators = [DataRequired(), verify_password],
+            validators = [InputRequired(), verify_password],
             **kwargs)
 
 
@@ -89,7 +88,7 @@ class PasswordNewField(PasswordField):
         Password must be between 8 and 64 characters,
         and must contain at least one letter, digit and symbol.
         """
-        validators = [DataRequired(), Regexp(regexp,0,message)]
+        validators = [InputRequired(), Regexp(regexp,0,message)]
         super(PasswordNewField, self).__init__(
             label = label,
             validators = validators,
@@ -98,14 +97,14 @@ class PasswordNewField(PasswordField):
 
 class PasswordConfirmField(PasswordField):
     def __init__(self, label="Confirm password", **kwargs):
-        validators = [DataRequired(), EqualTo("password", "Passwords don't match.")]
+        validators = [InputRequired(), EqualTo("password", "Passwords don't match.")]
         super(PasswordConfirmField, self).__init__(
             label = label,
             validators = validators,
             **kwargs)
 
 
-# forms
+# forms -----------------------------------------------------------------------
 class UserForm(BaseForm):
     def __init__(self, **kwargs):
         super(UserForm, self).__init__(**kwargs)
@@ -154,14 +153,14 @@ class ChangePasswordForm(ChangeUserForm):
 
 
 class ResetRequestForm(UserForm):
-    title = "Request account reset"
     _submit = "Reset"
+    title = "Request account reset"
     email_old = EmailOldField()
 
 
 class ResetForm(UserForm):
-    title = "Reset username and password"
     _submit = "Reset"
+    title = "Reset username and password"
     username = UsernameNewField("New username")
     password = PasswordNewField("New password")
     password_confirm = PasswordConfirmField()

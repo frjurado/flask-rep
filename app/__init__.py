@@ -14,7 +14,7 @@ pagedown = PageDown()
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
-# uncomment next line
+# uncomment the next line
 # if you want to be redirected to auth.login when 401
 # login_manager.login_view = 'auth.login'
 # and these for fresh logins
@@ -42,9 +42,11 @@ def create_app(config_name='default'):
 
     from .main import main
     from .auth import auth
-    from .dash import dash
+    from .user import user
+    from .post import post
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix='/auth')
-    app.register_blueprint(dash, url_prefix='/dashboard')
+    app.register_blueprint(user, url_prefix='/user')
+    app.register_blueprint(post, url_prefix='/post')
 
     return app

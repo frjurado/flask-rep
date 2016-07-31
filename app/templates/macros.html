@@ -1,54 +1,3 @@
-{% macro h_form( form,
-                 method="POST",
-                 action=None) %}
-{{ render_form (form, method, action, vertical=False, use_label=False) }}
-{% endmacro %}
-
-
-{% macro user_roles(user) %}
-{% if user.get_role() == "Blocked" %}
-  <td>{{ h_form(user.unblock_form, action=url_for('dash.unblock_user')) }}</td>
-  <td>{{ h_form(user.delete_form, action=url_for('dash.delete_account')) }}</td>
-{% elif user.get_role() == "Guest" %}
-  <td>{{ h_form(user.block_form, action=url_for('dash.block_user')) }}</td>
-{% elif user.assign_form %}
-  <td>{{ h_form(user.assign_form, action=url_for('dash.assign_role')) }}</td>
-  <td>{{ h_form(user.banish_form, action=url_for('dash.banish_user')) }}</td>
-{% endif %}
-{% endmacro %}
-
-
-
-
-
-
-
-
-
-{% macro short_posts(posts, current_user) %}
-<ul class="list-unstyled">
-  {% for post in posts %}
-  <li class="short-post">
-    <h2>
-      <a class="link-unstyled" href="{{ url_for('main.post', slug=post.slug) }}">{{ post.name }}</a>
-    </h2>
-    <div class="short-post-head">
-      by
-      <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
-        {{ post.author.name or post.author.username }}</a>,
-      {{ post.created }}
-      {% if post.author == current_user %}
-       <br>
-       <a class="btn btn-primary" href="{{ url_for('dash.edit_post', slug=post.slug) }}">Edit</a>
-      {% endif %}
-    </div>
-    <div class="short-post-excerpt">
-      <p>{{ post.excerpt }}</p>
-    </div>
-  </li>
-  {% endfor %}
-</ul>
-{% endmacro %}
 
 {% macro pagination_widget(pagination, endpoint) %}
 <nav class="text-center">
@@ -90,4 +39,16 @@
 
   </ul>
 </nav>
+{% endmacro %}
+
+
+{% macro collapse_button(name) %}
+<a class="change-button" data-toggle="collapse" href="#{{name}}" aria-controls="{{name}}">
+  change
+</a>
+{% endmacro %}
+
+
+{% macro collapse_form(name, form) %}
+<div class="collapse" id="{{name}}">{{ form() }}</div>
 {% endmacro %}

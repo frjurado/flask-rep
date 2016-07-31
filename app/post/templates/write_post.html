@@ -1,5 +1,4 @@
 {% extends 'layout.html' %}
-{% import 'macros.html' as macro %}
 
 {% block js %}
 {{ super() }}
@@ -8,6 +7,6 @@
 
 {% block content %}
 
-{{ macro.render_form(form) }}
+{{ form() }}
 
 {% endblock %}

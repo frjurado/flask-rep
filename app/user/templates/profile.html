@@ -1,0 +1,86 @@
+{% extends 'dashboard.html' %}
+{% from 'macros.html' import collapse_button, collapse_form %}
+
+{% block dash_content %}
+<h2>
+  {{ user.name or "(...)" }}
+{% if you %}
+  <small>{{ collapse_button("nameForm") }}</small>
+</h2>
+{{ collapse_form("nameForm", forms['name']) }}
+{% else %}
+</h2>
+{% endif %}
+
+<p>
+  <a href="{{ user.url or '#' }}">{{ user.url or "(url)" }}</a>
+{% if you %}
+  {{ collapse_button("urlForm") }}
+</p>
+{{ collapse_form("urlForm", forms['url']) }}
+{% else %}
+</p>
+{% endif %}
+
+<hr>
+<img src="{{ user.gravatar() }}">
+<hr>
+
+<ul>
+  <li>
+    Email: {{ user.email }}
+    {% if you %}(<a href="{{ url_for('auth.change_email_request') }}">change</a>){% endif %}
+  </li>
+  <li>
+    Username: {{ user.username }}
+    {% if you %}(<a href="{{ url_for('auth.change_username') }}">change</a>){% endif %}
+  </li>
+  {% if you %}
+  <li>
+    <a href="{{ url_for('auth.change_password') }}">Change password</a>
+  </li>
+  {% endif %}
+  <li>
+    Role: {{ user.role.name }}
+    {% if admin and not you %}
+    {{ collapse_button("roleForm") }}
+    {{ collapse_form("roleForm", forms['role']) }}
+    {% endif %}
+  </li>
+  <li>
+    {% if user.confirmed %}
+    Confirmed account.
+    {% elif you %}
+    You're account isn't confirmed yet.<br>
+    Please check your email.
+    If you need another confirmation token,
+    <a href="{{ url_for('auth.resend_confirmation') }}">click here</a>.
+    {% else %}
+    Account is not confirmed.
+    {% endif %}
+  </li>
+</ul>
+
+<hr>
+
+<dl>
+  <dt>Member since:</dt>
+  <dd>{{ user.member_since }}</dd>
+</dl>
+
+{% if admin and user.get_role() == "Guest" %}
+<div>
+  {{ forms['delete']() }}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $('.change-button').on('click', function () {
+    var text = $.trim($(this).text());
+    if (text=="change") { $(this).text("close"); }
+    else { $(this).text("change"); }
+  })
+</script>
+{% endblock %}

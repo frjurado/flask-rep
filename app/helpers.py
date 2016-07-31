@@ -50,7 +50,7 @@ def next_or_index():
 
 
 def to_dashboard():
-    url = url_for('dash.user_profile', username=current_user.username)
+    url = url_for('user.profile', username=current_user.username)
     return redirect(url)
 
 # this stupid thing doesn't work...

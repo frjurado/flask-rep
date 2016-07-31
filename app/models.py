@@ -1,8 +1,9 @@
 from datetime import datetime
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app, request
-from flask.ext.login import UserMixin, AnonymousUserMixin
+from flask import current_app, request, Markup, url_for
+from flask.ext.login import UserMixin, AnonymousUserMixin, current_user
+from sqlalchemy.orm import backref ##
 from sqlalchemy.ext.declarative import declared_attr
 from markdown import markdown
 import bleach
@@ -12,10 +13,9 @@ from helpers import urlize, serialize, load_token
 
 class Permission:
     COMMENT    = 0b00000001 # 0x01
-    ROLE       = 0b00000010 # 0x02
-    MODERATE   = 0b00000100 # 0x04
-    WRITE_POST = 0b00001000 # 0x08
-    EDIT_POST  = 0b00010000 # 0x10
+    MODERATE   = 0b00000010 # 0x02
+    WRITE_POST = 0b00000100 # 0x04
+    EDIT_POST  = 0b00001000 # 0x08
     ADMINISTER = 0b10000000 # 0x80
 
 
@@ -25,10 +25,9 @@ class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
     default = db.Column(db.Boolean, default=False, index=True)
-    member = db.Column(db.Boolean, default=True)
     permissions = db.Column(db.Integer)
-    # backref
-    users = db.relationship('User', backref='role', lazy='dynamic')
+    # relationships
+    users = db.relationship('User', back_populates='role')
 
     # string representation
     def __repr__(self):
@@ -37,34 +36,23 @@ class Role(db.Model):
     # loading the roles
     @staticmethod
     def insert_roles():
-        roles = { 'Blocked': (0x00, False, False),            # 0x00
-                  'Guest': (Permission.COMMENT, False, True), # 0x01
-                  'Candidate': (Permission.COMMENT |          # 0x03
-                                Permission.ROLE,
-                                True, False),
-                  'Moderator': (Permission.COMMENT |          # 0x07
-                                Permission.ROLE |
-                                Permission.MODERATE,
-                                True, False),
-                  'Writer': (Permission.COMMENT |             # 0x0f
-                             Permission.ROLE |
-                             Permission.MODERATE |
-                             Permission.WRITE_POST,
-                             True, False),
-                  'Editor': (Permission.COMMENT |             # 0x1f
-                             Permission.ROLE |
-                             Permission.MODERATE |
-                             Permission.WRITE_POST |
-                             Permission.EDIT_POST,
-                             True, False),
-                  'Administrator': (0xff, True, False),       # 0xff & 0xfd
-                  'Main Administrator': (0xff & ~ Permission.ROLE, True, False) }
+        roles = { 'Guest':     (Permission.COMMENT, True),
+                  'Moderator': (Permission.COMMENT |
+                                Permission.MODERATE, False),
+                  'Writer':    (Permission.COMMENT |
+                                Permission.MODERATE |
+                                Permission.WRITE_POST, False),
+                  'Editor':    (Permission.COMMENT |
+                                Permission.MODERATE |
+                                Permission.WRITE_POST |
+                                Permission.EDIT_POST, False),
+                  'Administrator': (0xff, False)
+                }
         for r in roles:
             role = Role.query.filter_by(name=r).first()
             if role is None:
                 role = Role(name=r)
-            role.default = roles[r][2]
-            role.member = roles[r][1]
+            role.default = roles[r][1]
             role.permissions = roles[r][0]
             db.session.add(role)
         db.session.commit()
@@ -84,20 +72,19 @@ class User(UserMixin, db.Model):
     url = db.Column(db.String(128))
     avatar_hash = db.Column(db.String(64))
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
-    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
-    newsletter = db.Column(db.Boolean, default=False)
-    # FK to roles
+    # FK to roles and relationship
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    # backrefs
-    posts = db.relationship('Post', backref='author', lazy='dynamic')
+    role = db.relationship('Role', back_populates='users')
+    # other relationships
+    posts = db.relationship('Post', backref='author')
+    tags = db.relationship('Tag', backref='author')
+    categories = db.relationship('Category', backref='author')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['ADMIN']:
-                self.role = Role.query.filter_by(permissions=0xfd).first()
-            elif self.username is not None:
-                self.role = Role.query.filter_by(permissions=0x03).first()
+                self.role = Role.query.filter_by(permissions=0xff).first()
             else:
                 self.role = Role.query.filter_by(default=True).first()
         self.set_avatar_hash()
@@ -175,8 +162,7 @@ class User(UserMixin, db.Model):
         db.session.add(self)
         return True
 
-    # As this one implies a POST, all the checking is done within the form
-    def reset(self, new_username, new_password):
+    def reset(self, new_username, new_password): #Checking within the form
         self.username = new_username
         self.password = new_password
         db.session.add(self)
@@ -199,60 +185,24 @@ class User(UserMixin, db.Model):
             rating=rating
         )
 
-    # refresh last_seen (before_app_request) ??
-    # --------------------------------------
-    def ping(self):
-        self.last_seen = datetime.utcnow()
-        db.session.add(self)
-
-    # check role, permissions or membership -- revise please!!
-    # -------------------------------------
+    # roles
     def get_role(self):
-        return self.role.name or None
+        return self.role.name
 
-    def can(self, permissions):
-        return (self.role.permissions & permissions) == permissions
-
-    def is_member(self):
-        return self.role.member
-
-    def is_administrator(self):
-        return self.can(Permission.ADMINISTER)
-
-    def is_main_administrator(self):
-        return self.can(Permission.ADMINISTER) and not self.can(Permission.ROLE)
-
-    # assign roles, block, unblock, admit and banish -- revise please!!
-    # ----------------------------------------------
-    def _role(self, role):
+    def set_role(self, role_id):
+        role = Role.query.get(int(role_id))
+        if role is None or role == self.role \
+                or ( self == current_user and self.is_administrator() ):
+            return False
         self.role = role
         db.session.add(self)
         return True
 
-    def block(self):
-        if self.is_member():
-            return False
-        return self._role(Role.query.filter_by(permissions=0x00).first())
+    def can(self, permissions):
+        return (self.role.permissions & permissions) == permissions
 
-    def unblock(self):
-        if self.is_member():
-            return False
-        return self._role(Role.query.filter_by(permissions=0x01).first())
-
-    def set_role(self, role):
-        if not self.can(Permission.ROLE) or not self.confirmed:
-            return False
-        return self._role(role)
-
-    def admit(self):
-        if not self.role.permissions == 0x01:
-            return False
-        return self._role(Role.query.filter_by(permissions=0x03).first())
-
-    def banish(self):
-        if not self.is_member() or self.is_main_administrator():
-            return False
-        return self._role(Role.query.filter_by(permissions=0x01).first())
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
 
 
 class AnonymousUser(AnonymousUserMixin):
@@ -266,13 +216,7 @@ class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return (Permission.COMMENT & permissions) == permissions
 
-    def is_member(self):
-        return False
-
     def is_administrator(self):
-        return False
-
-    def is_main_administrator(self):
         return False
 
 
@@ -286,28 +230,52 @@ def load_user(user_id):
 # CONTENT #
 ###############################################################################
 
-def post_slug(context):
-    slug = urlize(context.current_parameters['name'])
-    similar_posts = Post.query.filter(Post.slug.like("{}%".format(slug))).count()
-    if similar_posts > 0:
-        slug = "{0}-{1}".format(slug, str(similar_posts + 1))
-    return slug
-
 # MIXINS
 class MainContentMixin(object):
-    created = db.Column(db.DateTime(), default=datetime.utcnow) # index?
+    created = db.Column(db.DateTime(), default=datetime.utcnow, index=True)
     modified = db.Column(db.DateTime(), default=datetime.utcnow, onupdate=datetime.utcnow)
     status = db.Column(db.Boolean, default=False)
 
     @declared_attr
     def author_id(cls):
-        return db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+        return db.Column(
+            db.Integer,
+            db.ForeignKey('users.id'),
+            default = current_user._get_current_object() # this doesn't work?
+        )
 
 
 class NameMixin(object):
     name = db.Column(db.String(128))
-    slug = db.Column(db.String(128), default=post_slug, onupdate=post_slug)
+    slug = db.Column(db.String(128))
     excerpt = db.Column(db.Text)
+    _endpoint = None
+
+    def href(self):
+        if self._endpoint is not None:
+            return url_for(self._endpoint, slug=self.slug)
+        else:
+            return "#"
+
+    def link(self, classes=None):
+        return Markup("<a class='{2}' href={0}>{1}</a>".format(
+            self.href(),
+            self.name,
+            classes or ""
+        ))
+
+    @staticmethod
+    def on_changed_name(target, value, oldvalue, initiator):
+        if value != oldvalue:
+            base_slug = urlize(value)
+            slug = base_slug
+            i = 1
+            while True:
+                if Post.query.filter_by(slug = slug).first() is None:
+                    target.slug = slug
+                    break
+                i = i + 1
+                slug = "{}-{}".format(base_slug, i)
 
 
 class ContentMixin(object):
@@ -327,6 +295,36 @@ class ContentMixin(object):
             )
         )
 
+
+class HierarchicalMixin(object):
+    @declared_attr
+    def parent_id(cls):
+        fk = '{}.id'.format(cls.__tablename__)
+        return db.Column(db.Integer, db.ForeignKey(fk))
+
+    @declared_attr
+    def children(cls):
+        return db.relationship(
+            cls.__name__,
+            backref = db.backref('parent', remote_side=cls.id),
+            foreign_keys = cls.parent_id # necesary, but don't know why!
+        )
+
+    def tree(self, linked=True): # this seems (...) to work! revise!!
+        e = self
+        tree_list = [e]
+        while e.parent is not None:
+            e = self.__class__.query.get(e.parent_id)
+            tree_list = [e] + tree_list
+        if linked:
+            output = " > ".join([e.link() for e in tree_list])
+        else:
+            output = " > ".join([e.name for e in tree_list])
+        return Markup(output)
+
+    order = db.Column(db.Integer) # is this necessary?
+
+
 # BASE CLASS
 class MenuItem(db.Model):
     __tablename__ = 'menu_items'
@@ -340,7 +338,14 @@ class MenuItem(db.Model):
     }
 
 
-# HierarchicalMixin is still... missing!
+# many-to-many relationships
+post_tag = db.Table(
+    'post_tag',
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id')),
+    db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'))
+)
+
+# HierarchicalMixin is still missing!
 class Post(MainContentMixin, NameMixin, ContentMixin, MenuItem):
     __tablename__ = 'posts'
 
@@ -349,6 +354,15 @@ class Post(MainContentMixin, NameMixin, ContentMixin, MenuItem):
     page = db.Column(db.Boolean, default=False)
     comment_enabled = db.Column(db.Boolean, default=True)
     comment_count = db.Column(db.Integer, default=0)
+    _endpoint = 'main.post'
+
+    tags = db.relationship(
+        'Tag',
+        secondary = post_tag,
+        back_populates = 'posts'
+    )
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category = db.relationship('Category', backref='posts', foreign_keys=[category_id])
 
     __mapper_args__ = {
         'polymorphic_identity': 'posts'
@@ -378,4 +392,64 @@ class Post(MainContentMixin, NameMixin, ContentMixin, MenuItem):
             db.session.add(p)
             db.session.commit()
 
+    # def edit_link, delete_link, ...
+    def edit_link(self):
+        href = url_for('post.edit', slug=self.slug)
+        link = '<a class="btn btn-primary" href="{}">Edit</a>'.format(href)
+        return Markup(link)
+
+    def delete_form(self):
+        from .post.forms import DeletePostForm
+        form = DeletePostForm(self)
+        return form()
+
+
+class Tag(MainContentMixin, NameMixin, MenuItem):
+    __tablename__ = 'tags'
+
+    id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), primary_key=True)
+
+    _endpoint = 'main.tag'
+
+    posts = db.relationship(
+        'Post',
+        secondary = post_tag,
+        back_populates = 'tags'
+    )
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'tags'
+    }
+
+    # string representation
+    def __repr__(self):
+        return '<Tag {0}>'.format(self.name)
+
+
+class Category(MainContentMixin, NameMixin, HierarchicalMixin, MenuItem):
+    __tablename__ = 'categories'
+
+    id = db.Column(db.Integer, db.ForeignKey('menu_items.id'), primary_key=True)
+
+    _endpoint = 'main.category'
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'categories'
+    }
+
+    # string representation
+    def __repr__(self):
+        return '<Category {0}>'.format(self.name)
+
+    # def tree(self):
+    #     c = self
+    #     categories = [c]
+    #     while c.parent_id is not None:
+    #         c = Category.query.get(c.parent_id)
+    #         categories = [c] + categories
+    #     return " > ".join([c.name for c in categories])
+
 db.event.listen(Post.body_md, 'set', Post.on_changed_body)
+db.event.listen(Post.name, 'set', Post.on_changed_name)
+db.event.listen(Tag.name, 'set', Tag.on_changed_name)
+db.event.listen(Category.name, 'set', Category.on_changed_name)

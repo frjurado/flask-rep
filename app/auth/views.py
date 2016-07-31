@@ -6,15 +6,14 @@ from . import auth
 from .forms import *
 from .. import db
 from ..models import User
-from ..decorators import signup_enabled, anonymous_required, main_admin_excluded
+from ..decorators import signup_enabled, anonymous_required
 from ..helpers import invalid_token, next_or_index, to_dashboard
 
 
+# helper
 def auth_form(form, login=False, signup=False):
     return render_template('auth_form.html',
-                           form = form,
-                           login = login,
-                           signup = signup)
+                           form=form, login=login, signup=signup)
 
 
 # main auth views
@@ -100,7 +99,6 @@ def confirm(token):
 # data changes
 @auth.route('/change-email', methods=['GET', 'POST'])
 @fresh_login_required
-@main_admin_excluded
 def change_email_request():
     """
     Change email associated with your account.
@@ -118,7 +116,6 @@ def change_email_request():
 
 @auth.route('/change-email/<token>')
 @fresh_login_required
-@main_admin_excluded
 def change_email(token):
     """
     args: token.

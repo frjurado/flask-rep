@@ -25,6 +25,10 @@ h1, h2, p {
   background-color: #dfd;
 }
 
+.float-right {
+  float: right;
+}
+
 .dashboard {
   margin: 10px 0;
   padding: 10px;
@@ -33,17 +37,20 @@ h1, h2, p {
 }
 
 .post-title {
-  color: #44b;
-  font-size: 2em;
-  margin-bottom: 0;
+  color: #8b8;
+  font-size: 3em;
 }
 
 .post-head {
+  font-size: 0.9em;
+  background-color: #efe;
+  color: #8a8;
   margin: 0;
+  padding: 4px;
 }
 
-.post-gravatar, .post-data {
-  float: left;
+.post-body {
+  margin-top: 1em;
 }
 
 .post-excerpt {
@@ -56,10 +63,14 @@ h1, h2, p {
 /* SHORT POST */
 .short-post {
   margin: 10px 0 10px -15px;
-  padding: 10px;
-  background-color: #ddf;
+  padding: 20px 10px 10px 10px;
+  background-color: #dfd;
 }
 
+.short-post h2 {
+  color: #8b8;
+  margin-top: 0;
+}
 .short-post-head {
   font-size: 0.9em;
   margin: -10px 0 10px 0;
@@ -67,5 +78,5 @@ h1, h2, p {
 }
 
 .short-post-excerpt {
-
+  font-size: 1.1em;
 }

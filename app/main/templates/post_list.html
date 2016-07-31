@@ -1,18 +1,61 @@
 {% extends 'layout.html' %}
-{% from 'macros.html' import short_posts, pagination_widget %}
+{% from 'macros.html' import pagination_widget %}
 
 {% block content %}
 
 {% if title %}
-  <h2>{{ title }}</h2>
+<h2>{{ title }}</h2>
 {% endif %}
 
 {% if posts == [] %}
-  <p>No posts here.</p>
+<p>No posts here.</p>
 {% else %}
-  {{ pagination_widget(pagination, 'main.index') }}
-  {{ short_posts(posts, current_user) }}
-  {{ pagination_widget(pagination, 'main.index') }}
+
+{{ pagination_widget(pagination, 'main.index') }}
+
+<ul class="list-unstyled">
+  {% for post in posts %}
+  <li class="short-post">
+
+    {% if post.author == current_user or current_user.can(Permission.EDIT_POST) %}
+    <div class="float-right">
+      {{ post.edit_link() }}
+      {{ post.delete_form() }}
+    </div>
+    {% endif %}
+
+    <h2>
+      {{ post.link(classes="link-unstyled") }}
+    </h2>
+
+    <div class="short-post-head">
+      by
+      <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
+        {{ post.author.name or post.author.username }}</a>,
+      {{ post.created }}
+      {% if post.category %}
+      <br>
+      {{ post.category.tree() }}
+      {% endif %}
+    </div>
+
+    <div>
+      {% for tag in post.tags %}
+      <span class="label label-primary">
+        {{ tag.link(classes="link-unstyled") }}
+      </span>
+      {% endfor %}
+    </div>
+
+    <div class="short-post-excerpt">
+      {{ post.excerpt }}
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+
+{{ pagination_widget(pagination, 'main.index') }}
+
 {% endif %}
 
 {% endblock %}

@@ -1,7 +1,7 @@
-from flask import request, render_template, current_app, abort
+from flask import request, render_template, current_app
 from flask.views import View
 from . import main
-from ..models import User, Post
+from ..models import User, Post, Tag, Category
 from ..helpers import get_or_404
 
 
@@ -19,11 +19,8 @@ class PostList(View):
     def dispatch_request(self, **kwargs):
         query = self.query(**kwargs).order_by(Post.created.desc())
         page = request.args.get('page', 1, type=int)
-        pagination = query.paginate(
-            page,
-            per_page=current_app.config['POSTS_PER_PAGE'],
-            error_out=True
-        )
+        per_page = current_app.config['POSTS_PER_PAGE']
+        pagination = query.paginate(page, per_page=per_page, error_out=True)
         posts = pagination.items
         context = { 'title': self.title,
                     'pagination': pagination,
@@ -43,10 +40,24 @@ class AuthorList(PostList):
         return Post.query.filter_by(author=author)
 
 
-main.add_url_rule('/',
-                  view_func=IndexList.as_view('index'))
-main.add_url_rule('/author/<username>',
-                  view_func=AuthorList.as_view('author'))
+class TagList(PostList):
+    def query(self, **kwargs):
+        tag = get_or_404(Tag, Tag.slug == kwargs['slug'])
+        self.title = "Posts tagged {}".format(tag.name)
+        return Post.query.filter(Post.tags.contains(tag))
+
+
+class CategoryList(PostList):
+    def query(self, **kwargs):
+        category = get_or_404(Category, Category.slug == kwargs['slug'])
+        self.title = "Posts under category {}".format(category.name)
+        return Post.query.filter_by(category=category)
+
+main.add_url_rule('/',                  view_func=IndexList.as_view('index'))
+main.add_url_rule('/author/<username>', view_func=AuthorList.as_view('author'))
+main.add_url_rule('/tag/<slug>',        view_func=TagList.as_view('tag'))
+main.add_url_rule('/category/<slug>',   view_func=CategoryList.as_view('category'))
+
 
 @main.route('/<slug>')
 def post(slug):
