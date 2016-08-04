@@ -1,7 +1,6 @@
 **MAIN**
   * Simplify `errors.py`?
-  * Revise templates (again).
-  * (future implementation of tag/category should be simple...)
+  * Revise templates (again)
 
 **AUTH**
   * revise email sending (kind of ugly)
@@ -13,39 +12,56 @@
   * big link, border, padding...
   * ticks for confirmation!
   * all-purpose macro for deletion confirmation ('are you sure?')
+  * AJAX forms.
 * edit & role: could be better defined...
 * delete view validation (check it's a guest)
 * URL validation within profile (add http?)
 * redirection strategy (not always profile but referrer!)
 
 **POST**
-* delete post: has been moved to `models.py`.
+* delete post: has been moved to `models/content.py`.
   should revise and do something similar with users?
 * need decorators!
 * cancel button!
-* what about page?
+* what about page? status?
 
 **CATEGORY & TAG**
 * nicer interface!
-* study this:
-  `AmbiguousForeignKeysError: Could not determine join condition between parent/child tables on relationship Category.posts - there are multiple foreign key paths linking the tables. Specify the 'foreign_keys' argument, providing a list of those columns which should be counted as containing a foreign key reference to the parent table.`
+* study this: `AmbiguousForeignKeysError`
   [ Error was solved (?) within Post.category (foreign_keys=...) ]
-
-* changing backref to back_populates (it's clearer)
-  I still keep it for author, because it's made with a mixin...
-  Just now it's a bit of a mess...............
+* backref vs. back_populates (what is clearer?)
+* go on with the generic link idea (users?)
 
 
 **********************************
 # i'm here
 
-* go on with the generic link idea (users?)
+**IMAGE**
+* Image class, with MainContentMixin, filename, alternative & caption,
+  * plus many-to-many relationship to Post.
+    * before implementing the rest of the relationships,
+      * re-implement simple image uploading;
+      * try AJAX image uploading.
+  * plus many-to-one relationship to Category!
+  * plus both Post and Category have a many-to-one relationship to Image
+    (main_image_id or something like that) !!!
+
+
+**reforming MODELS**
+* should define fucking tests!
+* Post/Page is no longer hierarchical
+* Post/Page status has to be implemented
+* Page option has to be implemented
+* Category is hierarchical, but not with a mixin
+  * The problem arose when trying to apply HierarchicalMixin to Post
+  * Querying anything became impossible, as when it mapped the tables
+    `Table object has no attribute id` arised...
+  * Check that out!
+
 
 **********************************
-
 * revise macros, form macros and use modern system for rendering...
 * user_forms macro is not very good (implies table, can be empty, ...)
-
 * revise decorators
 * user_model, forms, ... testing!!
 
@@ -53,8 +69,9 @@
   * form-wide errors?
   * StopValidation?
   * InputRequired!!
+  * validation unit tests???
 
-* revise everything is Unicode!
+* revise everything is Unicode! (encode declaration!)
 * revise import system
 * revise mailing system
 * flask_ or flask.ext. ??
@@ -65,23 +82,20 @@
   (maybe you should just not delete them, but the posts/comments first)
 * do you really want to...?
 
-  (check http://flask.pocoo.org/snippets/63/)
-
 * flash messaging (also in decorators)
-
 * revise helpers
 * list of forbidden usernames and slugs (urls!)
-* validation unit tests???
-* revise configuration!!
+* revise configuration
 * Regexp subclasses?
 * redirection with classes?
 
 it is definitely the time to...
 * revise the docs!
 * revise the unit tests!
-* even unit test... helpers!
+* unit test helpers!
 
 ...
 
+secure back redirects: http://flask.pocoo.org/snippets/63/
 slugs: http://flask.pocoo.org/snippets/5/
 Flask-Cache: http://pythonhosted.org/Flask-Cache/

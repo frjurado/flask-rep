@@ -2,7 +2,7 @@ from flask import url_for
 from wtforms import StringField, SelectField, HiddenField
 from wtforms.validators import Required, URL, ValidationError
 from ..forms import BaseForm
-from ..models import Role, User
+from ..models.users import Role, User
 
 
 class UserForm(BaseForm):

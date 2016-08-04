@@ -1,8 +1,9 @@
-from wtforms import StringField, TextAreaField, HiddenField, SelectField
-from wtforms.validators import InputRequired, ValidationError
+import re
+from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileField
+from wtforms.validators import Required, Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
 from ..forms import BaseForm
-from ..models import Post, Category
+from ..models.content import Post, Category
 
 
 class PostForm(BaseForm):
@@ -27,7 +28,7 @@ class PostForm(BaseForm):
             e = stack.pop()
             if e.children:
                 stack.extend(e.children)
-            self.old_category.choices.append( (e.id, e.tree()) )
+            self.old_category.choices.append( (e.id, e.tree(linked=False)) )
 
     def validate_new_category(self, field):
         field.data = field.data.strip()
@@ -63,3 +64,16 @@ class DeletePostForm(BaseForm):
         if post is None:
             raise ValidationError("Invalid post.")
         self.post = post
+
+
+####
+class ImageForm(BaseForm):
+    _enctype = "multipart/form-data"
+    image = FileField("Image file",
+                      validators = [Required() #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
+                                   ]
+                     )
+    caption = StringField("Caption")
+
+    # def validate_image(form, field):
+    #     field.data = re.sub(r'[^a-z0-9_-]', '_', field.data)

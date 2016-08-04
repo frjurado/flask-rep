@@ -1,4 +1,6 @@
 import os
+
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -13,11 +15,14 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') # sender
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_SUBJECT_PREFIX = "[Test blog mail] - "
-
+    MAIL_SUBJECT_PREFIX = "[Test blog mail] - " # revise
     ADMIN = os.environ.get('ADMIN') # main administrator mail
+    
     SIGNUP_ENABLED = True
     POSTS_PER_PAGE = 10
+
+    UPLOADS_DEFAULT_DEST = "./app/static/uploads"
+    UPLOADS_DEFAULT_URL = "/static/uploads/"
 
     @staticmethod
     def init_app(app):

@@ -4,5 +4,8 @@
 # Databases
 *.sqlite
 
+# Uploads
+app/static/uploads/**
+
 # Virtual Environment
 venv

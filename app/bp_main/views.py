@@ -1,7 +1,8 @@
 from flask import request, render_template, current_app
 from flask.views import View
 from . import main
-from ..models import User, Post, Tag, Category
+from ..models.users import User
+from ..models.content import Post, Category, Tag
 from ..helpers import get_or_404
 
 

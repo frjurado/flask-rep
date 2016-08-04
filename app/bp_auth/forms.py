@@ -2,7 +2,7 @@ from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Regexp, Email, EqualTo
 from wtforms.validators import ValidationError
 from ..forms import BaseForm
-from ..models import User
+from ..models.users import User
 from ..helpers import serialize, load_token, invalid_token
 
 

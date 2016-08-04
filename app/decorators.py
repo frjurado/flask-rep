@@ -1,7 +1,8 @@
 from functools import wraps
 from flask import current_app, abort, redirect, url_for, flash
 from flask.ext.login import current_user
-from .models import Permission, Post
+from .models.users import Permission
+from .models.content import Post
 
 
 def signup_enabled(f):
@@ -83,18 +84,18 @@ def admin_or_self_required(f):
     return decorated_function
 
 
-def editor_or_self_required(f):
-    """
-    Specific permission-based decorator for
-    editor- or 'your post'- exclusive views.
-    """
-    @wraps(f)
-    def decorated_function(slug, *args, **kwargs):
-        post = Post.query.filter_by(slug=slug).first()
-        if post is None:
-            abort(404)
-        if not current_user.can(Permission.EDIT_POST) \
-                and not current_user == post.author:
-            abort(403)
-        return f(slug, post, *args, **kwargs)
-    return decorated_function
+# def editor_or_self_required(f):
+#     """
+#     Specific permission-based decorator for
+#     editor- or 'your post'- exclusive views.
+#     """
+#     @wraps(f)
+#     def decorated_function(slug, *args, **kwargs):
+#         post = Post.query.filter_by(slug=slug).first()
+#         if post is None:
+#             abort(404)
+#         if not current_user.can(Permission.EDIT_POST) \
+#                 and not current_user == post.author:
+#             abort(403)
+#         return f(slug, post, *args, **kwargs)
+#     return decorated_function

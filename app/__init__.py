@@ -4,6 +4,8 @@ from flask.ext.mail import Mail
 from flask.ext.login import LoginManager
 from flask.ext.wtf.csrf import CsrfProtect
 from flask.ext.pagedown import PageDown
+from flask.ext.uploads import (UploadSet, IMAGES,
+                               configure_uploads, patch_request_class)
 from config import config
 
 
@@ -11,15 +13,17 @@ db = SQLAlchemy()
 mail = Mail()
 csrf = CsrfProtect()
 pagedown = PageDown()
+images = UploadSet('images', IMAGES)
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
-# uncomment the next line
-# if you want to be redirected to auth.login when 401
+# uncomment if you want to be redirected to auth.login when 401
 # login_manager.login_view = 'auth.login'
+#
 # and these for fresh logins
 # login_manager.refresh_view = 'auth.login'
 # login_manager.needs_refresh_message = "Enter your credentials again, please."
+
 
 def create_app(config_name='default'):
     """
@@ -39,11 +43,13 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
     csrf.init_app(app)
     pagedown.init_app(app)
+    configure_uploads(app, images)
+    patch_request_class(app, size = 2*1024*1024)
 
-    from .main import main
-    from .auth import auth
-    from .user import user
-    from .post import post
+    from .bp_main import main
+    from .bp_auth import auth
+    from .bp_user import user
+    from .bp_post import post
     app.register_blueprint(main)
     app.register_blueprint(auth, url_prefix='/auth')
     app.register_blueprint(user, url_prefix='/user')

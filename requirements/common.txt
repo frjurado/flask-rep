@@ -5,6 +5,7 @@ Flask-Migrate==1.8.0
 Flask-PageDown==0.2.1
 Flask-SQLAlchemy==2.1
 Flask-Script==2.0.5
+Flask-Uploads==0.2.1
 Flask-WTF==0.12
 Jinja2==2.8
 Mako==1.0.3

@@ -5,7 +5,7 @@ import email
 from . import auth
 from .forms import *
 from .. import db
-from ..models import User
+from ..models.users import User
 from ..decorators import signup_enabled, anonymous_required
 from ..helpers import invalid_token, next_or_index, to_dashboard
 

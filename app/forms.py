@@ -18,6 +18,8 @@ class BaseForm(Form):
     title = None
     submit = SubmitField()
 
+    _enctype = None
+
     def __init__(self, **kwargs):
         super(BaseForm, self).__init__(**kwargs)
         submit_label = self._submit or self.title or "Submit"
@@ -28,9 +30,10 @@ class BaseForm(Form):
             return url_for(self._endpoint, **self._endpoint_kwargs)
         return None
 
-    def __call__(self, method="POST", action=None,
+    def __call__(self, method="POST", action=None, enctype=None,
                  vertical=None, labelled=None, small=None, danger=None):
         action = action or self._action()
+        enctype = enctype or self._enctype
         vertical = vertical or self._vertical
         labelled = labelled or self._labelled
         small = small or self._small
@@ -39,6 +42,7 @@ class BaseForm(Form):
                                         form = self,
                                         method = method,
                                         action = action,
+                                        enctype = enctype,
                                         vertical = vertical,
                                         labelled = labelled,
                                         small = small ,

@@ -3,7 +3,7 @@ from flask.ext.login import current_user, login_required
 from . import user
 from .forms import NameForm, UrlForm, DeleteForm, RoleForm
 from .. import db
-from ..models import User
+from ..models.users import User
 from ..decorators import admin_required, self_required, admin_or_self_required
 from ..helpers import get_or_404
 

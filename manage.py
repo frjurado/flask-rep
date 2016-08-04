@@ -1,7 +1,7 @@
 import os
 from app import create_app, db
-from app.models import \
-        Permission, Role, User, AnonymousUser, MenuItem, Post, Tag, Category
+from app.models.users import Permission, Role, User, AnonymousUser
+from app.models.content import MenuItem, Post, Category, Tag
 from flask.ext.script import Manager, Shell
 from flask.ext.migrate import Migrate, MigrateCommand
 
@@ -12,16 +12,16 @@ migrate = Migrate(app, db)
 
 def make_shell_context():
     return dict(
-        app=app,
-        db=db,
-        Permission=Permission,
-        Role=Role,
-        User=User,
-        AnonymousUser=AnonymousUser,
-        MenuItem=MenuItem,
-        Post=Post,
-        Tag=Tag,
-        Category=Category
+        app = app,
+        db = db,
+        Permission = Permission,
+        Role = Role,
+        User = User,
+        AnonymousUser = AnonymousUser,
+        MenuItem = MenuItem,
+        Post = Post,
+        Category = Category,
+        Tag = Tag
     )
 
 manager.add_command("shell", Shell(make_context=make_shell_context))

@@ -1,4 +1,6 @@
-<form {{ 'action={}'.format(action) if action }} method={{ method }}
+<form {{ 'action={}'.format(action) if action }}
+      {{ 'enctype={}'.format(enctype) if enctype }}
+      method={{ method }}
       {{ 'class=form-inline' if not vertical }}>
 
   {% if form.title %}
