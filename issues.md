@@ -40,11 +40,15 @@
 * Image class, with MainContentMixin, filename, alternative & caption,
   * plus many-to-many relationship to Post.
     * before implementing the rest of the relationships,
-      * re-implement simple image uploading;
+      * re-implement simple image uploading;  --
       * try AJAX image uploading.
   * plus many-to-one relationship to Category!
   * plus both Post and Category have a many-to-one relationship to Image
     (main_image_id or something like that) !!!
+
+* jQuery fallback? (http://flask.pocoo.org/docs/0.11/patterns/jquery/)
+* get script root?! it doesn't seem to work!!
+* then try an AJAX form within write_post to upload photos!!!!!!
 
 
 **reforming MODELS**
@@ -57,6 +61,7 @@
   * Querying anything became impossible, as when it mapped the tables
     `Table object has no attribute id` arised...
   * Check that out!
+* Some `render_as_batch=True` is to be added to `env.py`...
 
 
 **********************************

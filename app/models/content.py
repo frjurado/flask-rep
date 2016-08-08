@@ -74,6 +74,12 @@ post_tag = db.Table(
     db.Column("tag_id", db.Integer, db.ForeignKey("tag.id"))
 )
 
+post_image = db.Table(
+    "post_image",
+    db.Column("post_id", db.Integer, db.ForeignKey("post.id")),
+    db.Column("image_id", db.Integer, db.ForeignKey("image.id"))
+)
+
 
 # CLASSES
 ###########################################################
@@ -94,17 +100,20 @@ class Post(MainContentMixin, NameMixin, BodyMixin, AuthorMixin, MenuItem):
     comment_count = db.Column(db.Integer, default=0)
     # relationship w/ Category
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
-    category = db.relationship(
-        "Category",
-        backref = "posts",
-        foreign_keys = category_id
-    )
+    category = db.relationship("Category",
+                               backref = "posts",
+                               foreign_keys = category_id)
     # relationship w/ Tag
-    tags = db.relationship(
-        "Tag",
-        secondary = post_tag,
-        back_populates = "posts"
-    )
+    tags = db.relationship("Tag",
+                           secondary = post_tag,
+                           back_populates = "posts")
+    # relationship(s) w/ Image
+    images = db.relationship("Image",
+                             secondary = post_image,
+                             back_populates = "posts")
+    main_image_id = db.Column(db.Integer, db.ForeignKey("image.id"))
+    main_image = db.relationship("Image",
+                                 foreign_keys = main_image_id)
 
     _endpoint = "main.post"
 
@@ -155,11 +164,14 @@ class Category(MainContentMixin, NameMixin, MenuItem):
     excerpt = db.Column(db.Text)
     # hierarchy
     parent_id = db.Column(db.Integer, db.ForeignKey("category.id"))
-    children = db.relationship(
-        "Category",
-        backref = db.backref("parent", remote_side=id),
-        foreign_keys = parent_id
-    )
+    children = db.relationship("Category",
+                               backref = db.backref("parent", remote_side=id),
+                               foreign_keys = parent_id)
+    # relationship w/ Image
+    main_image_id = db.Column(db.Integer, db.ForeignKey("image.id"))
+    main_image = db.relationship("Image",
+                                 foreign_keys = main_image_id)
+    #
     _endpoint = "main.category"
 
     __mapper_args__ = { "polymorphic_identity": "category" }
@@ -183,11 +195,9 @@ db.event.listen(Category.name, "set", Category.on_changed_name)
 class Tag(MainContentMixin, NameMixin, MenuItem):
     id = db.Column(db.Integer, db.ForeignKey("menuitem.id"), primary_key=True)
     # relationship w/ Post
-    posts = db.relationship(
-        "Post",
-        secondary = post_tag,
-        back_populates = "tags"
-    )
+    posts = db.relationship("Post",
+                            secondary = post_tag,
+                            back_populates = "tags")
     #
     _endpoint = "main.tag"
 
@@ -195,3 +205,21 @@ class Tag(MainContentMixin, NameMixin, MenuItem):
 
 
 db.event.listen(Tag.name, "set", Tag.on_changed_name)
+
+
+class Image(MainContentMixin, BaseModel):
+    filename = db.Column(db.String(128), index=True, unique=True, nullable=False)
+    alternative = db.Column(db.String(128))
+    caption =db.Column(db.Text)
+    # relationship w/ Category
+    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
+    category = db.relationship("Category",
+                               backref = "images",
+                               foreign_keys = category_id)
+    # relationship w/ Post
+    posts = db.relationship("Post",
+                            secondary = post_image,
+                            back_populates = "images")
+
+    def _get_name(self):
+        return self.alternative or self.filename

@@ -69,11 +69,10 @@ class DeletePostForm(BaseForm):
 ####
 class ImageForm(BaseForm):
     _enctype = "multipart/form-data"
-    image = FileField("Image file",
-                      validators = [Required() #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
-                                   ]
-                     )
-    caption = StringField("Caption")
+    image = FileField("Image file", validators = [Required()])
+    #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
+    alternative = StringField("Alternative text")
+    caption = TextAreaField("Caption")
 
     # def validate_image(form, field):
     #     field.data = re.sub(r'[^a-z0-9_-]', '_', field.data)

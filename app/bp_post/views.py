@@ -1,12 +1,12 @@
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, request
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, DeletePostForm
-from .. import db
+from .forms import PostForm, DeletePostForm, ImageForm
+from .. import db, images
 from ..models.users import Permission
-from ..models.content import Post, Category, Tag
+from ..models.content import Post, Category, Tag, Image
 from ..decorators import permission_required
-from ..helpers import get_or_404
+from ..helpers import get_or_404 # necessary?
 
 
 # helpers
@@ -101,56 +101,35 @@ def delete(slug):
     return redirect(url_for('main.index')) # referrer?
 
 
-# ####
-# # import os
-# from flask import current_app, request, send_from_directory
-# # from werkzeug.utils import secure_filename
-# from .forms import ImageForm
-# from .. import images
-# from .._models import Attachment
-# #
-# # def allowed_file(filename):
-# #     return "." in filename \
-# #         and filename.rsplit(".", 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
-# #
-# #
-# @post.route('/file/upload', methods=['GET', 'POST'])
-# def file_upload():
-#     print
-#     print "within file_upload..."
-#     form = ImageForm()
-#     if form.validate_on_submit():
-#         filename = images.save(request.files['image'])
-#         print "filename = {}".format(filename)
-#         a = Attachment(
-#             name=filename,
-#             excerpt=form.caption.data,
-#             author=current_user._get_current_object()
-#         )
-#         db.session.add(a)
-#         print "database object = {}".format(a)
-#         flash("Photo was saved!")
-#         return redirect(url_for('post.file_view', filename=filename))
-#     return render_template('file_upload.html', form=form)
-# #         f = request.files['image']
-# #         if f and allowed_file(f.filename):
-# #             filename = secure_filename(f.filename)
-# #             f.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
-# #             return redirect(url_for('post.file_view', filename=filename))
-# #     return render_template('file_upload.html', form=form)
-# #
-# @post.route('/file/<filename>')
-# def file_view(filename):
-#     print
-#     print "within file_view..."
-#     photo = get_or_404(Attachment, Attachment.name == filename)
-#     print "database object = {}".format(photo)
-#     url = images.url(photo.name)
-#     print "filename = {}".format(photo.name)
-#     print "url = {}".format(url)
-#     # print ">>>"
-#     # print current_app.config["UPLOADS_DEFAULT_DEST"]
-#     # return send_from_directory(current_app.config["UPLOADS_DEFAULT_DEST"],
-#     #                           photo.name)
-#     # return url
-#     return render_template("photo.html", url=url, photo=photo)
+####
+@post.route('/file/upload', methods=['GET', 'POST'])
+def file_upload():
+    form = ImageForm()
+    if form.validate_on_submit():
+        filename = images.save(request.files['image'])
+        i = Image(
+            filename=filename,
+            alternative = form.alternative.data,
+            caption = form.caption.data,
+        )
+        db.session.add(i)
+        flash("Photo was saved!")
+        return redirect(url_for('post.file_view', filename=filename))
+    return render_template('file_upload.html', form=form)
+
+
+@post.route('/file/<filename>')
+def file_view(filename):
+    image = get_or_404(Image, Image.filename == filename)
+    url = images.url(image.filename)
+    return render_template("photo.html", url=url, image=image)
+
+# AJAX
+from flask import jsonify
+
+@post.route('/_add_numbers')
+def add_numbers():
+    a = request.args.get('a', 0, type=int)
+    b = request.args.get('b', 0, type=int)
+    print "calculando en el servidor..."
+    return jsonify(result=a + b)
