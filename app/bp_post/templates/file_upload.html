@@ -5,31 +5,39 @@
 {{ form() }}
 
 <h2>jQuery Example</h2>
-<p><input type=text size=5 name=a> +
-   <input type=text size=5 name=b> =
+<p><input id="a" type=text size=5> +
+   <input id="b" type=text size=5> =
    <span id=result>?</span>
-<p><a href=# id=calculate>calculate server side</a>
+<p><a href="javascript:calculate();" id=calculate>calculate server side</a>
 
 {% endblock %}
 
 
 {% block scripts %}
 <script type=text/javascript>
-  $SCRIPT_ROOT = "http://localhost:5000/post" //{{ request.script_root|tojson }};
-</script>
+  var csrftoken = "{{ csrf_token() }}"
 
-<script type=text/javascript>
-  $(function() {
-    $('a#calculate').bind('click', function() {
-      $.getJSON($SCRIPT_ROOT + '/_add_numbers', {
-        a: $('input[name="a"]').val(),
-        b: $('input[name="b"]').val()
-      }, function(data) {
-        $("#result").text(data.result);
-      });
-      return false;
-    });
+  $.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken)
+        }
+    }
   });
+
+  function calculate() {
+    $.ajax({
+      url: '/post/_add_numbers',
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({
+        a: $('#a').val(),
+        b: $('#b').val()
+      }),
+    }).done( function (data) {
+      $("#result").text(data.result);
+    });
+  }
 </script>
 
 {% endblock %}

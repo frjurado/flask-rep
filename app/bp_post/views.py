@@ -127,9 +127,10 @@ def file_view(filename):
 # AJAX
 from flask import jsonify
 
-@post.route('/_add_numbers')
+@post.route('/_add_numbers', methods=["POST"])
 def add_numbers():
-    a = request.args.get('a', 0, type=int)
-    b = request.args.get('b', 0, type=int)
-    print "calculando en el servidor..."
+    data = request.get_json()
+    print data
+    a = int(data.get("a", 0))
+    b = int(data.get("b", 0))
     return jsonify(result=a + b)
