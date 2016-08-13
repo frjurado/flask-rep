@@ -47,8 +47,25 @@
     (main_image_id or something like that) !!!
 
 * jQuery fallback? (http://flask.pocoo.org/docs/0.11/patterns/jquery/)
-* get script root?! it doesn't seem to work!!
-* then try an AJAX form within write_post to upload photos!!!!!!
+* get script root?! it doesn't seem to work!! -> is it necessary??
+* what is HTTP 304?
+* then try an AJAX form within write_post to upload photos!
+  * this is just the next step!
+  * using Dropzone.js
+    * why does dz move?
+    * now implement for post writing!!
+
+# two submits! --
+# when i submit photo, modal should close --
+# and it should empty itself --
+  --> just now reforming form.html (it's a mess!)
+    --> revise form classes and attributes
+    --> modal is a bit ugly
+    --> can I avoid Markup with __html__ method?
+    --> generic dismiss form!
+    --> better uploading thing!
+# how to get photos within text?
+# main photo!
 
 
 **reforming MODELS**

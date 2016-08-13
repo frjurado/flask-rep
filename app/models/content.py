@@ -6,7 +6,7 @@ from flask.ext.login import current_user
 from sqlalchemy.ext.declarative import declared_attr
 from . import BaseModel
 from .users import Permission, Role, User
-from .. import db
+from .. import db, images
 from ..helpers import urlize
 
 
@@ -223,3 +223,6 @@ class Image(MainContentMixin, BaseModel):
 
     def _get_name(self):
         return self.alternative or self.filename
+
+    def url(self):
+        return images.url(self.filename)

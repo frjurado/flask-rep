@@ -1,13 +1,11 @@
 from flask import url_for
 from wtforms import StringField, SelectField, HiddenField
 from wtforms.validators import Required, URL, ValidationError
-from ..forms import BaseForm
+from ..forms import InlineForm
 from ..models.users import Role, User
 
 
-class UserForm(BaseForm):
-    _vertical = False
-    _labelled = False
+class UserForm(InlineForm):
     _endpoint = 'user.edit_profile'
     username = HiddenField(validators=[Required()])
 

@@ -1,44 +1,128 @@
-<form {{ 'action={}'.format(action) if action }}
-      {{ 'enctype={}'.format(enctype) if enctype }}
-      method={{ method }}
-      {{ 'class=form-inline' if not vertical }}>
+{% macro form_tag() %}
+<form {{ 'id={}'.format(form._id()) }}
+      {{ 'class={}'.format(form._classes()) if form._classes() }}
+      {{ 'action={}'.format(form._action()) if form._action() }}
+      {{ 'method={}'.format(form._method) }}
+      {{ 'enctype={}'.format(form._enctype) if form._enctype }}>
+{% endmacro %}
 
-  {% if form.title %}
-  <h2>{{ form.title }}</h2>
-  {% endif %}
 
-  {% if form.errors %}
-  <p class="alert">
-    {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-      {% for error in field_errors %}
-        {{ form[field_name].label }}: {{ error }}<br>
-      {% endfor %}
+{% macro errors() %}
+{% if form.errors %}
+<div class="bg-danger">
+  {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+    {% for error in field_errors %}
+      <p>[{{ form[field_name].label }}] {{ error }}</p>
     {% endfor %}
-  </p>
-  {% endif %}
-
-  {{ form.csrf_token }}
-
-  {% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
-    {% if field.type == "BooleanField" %}
-    <div class="checkbox">
-      {{ field() }}
-      {{ field.label }}
-    </div>
-    {% elif labelled %}
-    <div class="form-group">
-      {{ field.label }}:
-      {{ field(class="form-control") }}
-    </div>
-    {% else %}
-    {{ field(class="form-control") }}
-    {% endif %}
   {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
 
-  {% if danger %}
-  {{ form.submit(class="btn btn-danger") }}
+
+{% macro core(labelled=True) %}
+{% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
+  {% if field.type == "BooleanField" %}
+  <div class="checkbox">
+    {{ field() }}
+    {{ field.label }}
+  </div>
+  {% elif labelled %}
+  <div class="form-group">
+    {{ field.label }}:
+    {{ field(class="form-control") }}
+  </div>
   {% else %}
-  {{ form.submit(class="btn btn-primary") }}
+  {{ field(class="form-control") }}
   {% endif %}
+{% endfor %}
+{% endmacro %}
 
-</form>
+
+{% macro submit() %}
+{% if form._danger %}
+{{ form.submit(class="btn btn-danger") }}
+{% else %}
+{{ form.submit(class="btn btn-primary") }}
+{% endif %}
+{% endmacro %}
+
+
+{% if form._inline %}
+<div>
+  {{ form_tag() }}
+    {{ errors() }}
+    {{ form.csrf_token }}
+    {{ core(labelled=False) }}
+    {{ submit() }}
+  </form>
+</div>
+{% elif form._modal %}
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      {{ form_tag() }}
+
+        {% if form._title %}
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title" id="modalLabel">{{ form._title }}</h4>
+        </div>
+        {% endif %}
+
+        <div class="modal-body">
+          {{ errors() }}
+          {{ form.csrf_token }}
+
+          {% if 'dropzone' in form._form_classes %}
+          <div class="dz-default dz-message">
+            <span>Drop files here to upload</span>
+          </div>
+          {% endif %}
+
+          {{ core() }}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
+          {{ submit() }}
+        </div>
+      </form>
+      <div id ="uploading" class="uploading text-center hidden">
+        <span class="glyphicon glyphicon-upload text-center" aria-hidden="true"></span>
+      </div>
+    </div>
+  </div>
+</div>
+{% else %}
+<div class="form-box">
+  {{ form_tag() }}
+
+    {% if form._title %}
+    <div class="modal-header">
+      <h4 class="modal-title">{{ form._title }}</h4>
+    </div>
+    {% endif %}
+
+    <div class="modal-body">
+      {{ errors() }}
+      {{ form.csrf_token }}
+
+      {% if 'dropzone' in form._form_classes %}
+      <div class="dz-default dz-message">
+        <span>Drop files here to upload</span>
+      </div>
+      {% endif %}
+
+      {{ core() }}
+    </div>
+
+    <div class="modal-footer">
+      <!-- dismiss? -->
+      {{ submit() }}
+    </div>
+  </form>
+</div>
+{% endif %}

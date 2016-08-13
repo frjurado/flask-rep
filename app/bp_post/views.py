@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, DeletePostForm, ImageForm
+from .forms import PostForm, DeletePostForm, ImageForm, DropForm
 from .. import db, images
 from ..models.users import Permission
 from ..models.content import Post, Category, Tag, Image
@@ -50,6 +50,8 @@ def set_categories(post, old, new):
 @permission_required(Permission.WRITE_POST)
 def write():
     form = PostForm()
+    drop_form = DropForm()
+    photos = Image.query.all()
     if form.validate_on_submit():
         post = Post( name = form.name.data,
                      excerpt = form.excerpt.data,
@@ -63,7 +65,8 @@ def write():
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
-    return render_template('write_post.html', form=form)
+    return render_template('write_post.html',
+                           form=form, drop_form=drop_form, photos=photos)
 
 
 @post.route('/edit/<slug>', methods=["GET", "POST"])
@@ -100,30 +103,6 @@ def delete(slug):
     flash("Somethong bad happened.")
     return redirect(url_for('main.index')) # referrer?
 
-
-####
-@post.route('/file/upload', methods=['GET', 'POST'])
-def file_upload():
-    form = ImageForm()
-    if form.validate_on_submit():
-        filename = images.save(request.files['image'])
-        i = Image(
-            filename=filename,
-            alternative = form.alternative.data,
-            caption = form.caption.data,
-        )
-        db.session.add(i)
-        flash("Photo was saved!")
-        return redirect(url_for('post.file_view', filename=filename))
-    return render_template('file_upload.html', form=form)
-
-
-@post.route('/file/<filename>')
-def file_view(filename):
-    image = get_or_404(Image, Image.filename == filename)
-    url = images.url(image.filename)
-    return render_template("photo.html", url=url, image=image)
-
 # AJAX
 from flask import jsonify
 
@@ -134,3 +113,42 @@ def add_numbers():
     a = int(data.get("a", 0))
     b = int(data.get("b", 0))
     return jsonify(result=a + b)
+
+####
+@post.route('/file/upload', methods=['GET', 'POST'])
+def file_upload():
+    uploaded_images = Image.query.all()
+    form = ImageForm()
+    form2 = DropForm()
+    if form.validate_on_submit():
+        filename = images.save(request.files['image'])
+        i = Image(
+            filename=filename,
+            alternative = form.alternative.data,
+            caption = form.caption.data,
+        )
+        db.session.add(i)
+        flash("Photo was saved!")
+        return redirect(url_for('post.file_upload'))
+    return render_template('file_upload.html',
+    form=form, form2=form2, images=uploaded_images)
+
+@post.route('/file/_upload', methods=["POST"])
+def _upload():
+    form = DropForm()
+    if form.validate_on_submit():
+        filename = images.save(request.files['file'])
+        i = Image(
+            filename=filename,
+            alternative = form.alternative.data,
+            caption = form.caption.data,
+        )
+        db.session.add(i)
+        img = '<img src="{}" alt="{}" width="240">'.format(i.url(), i.alternative)
+        return jsonify(img=img)
+
+@post.route('/file/<filename>')
+def file_view(filename):
+    image = get_or_404(Image, Image.filename == filename)
+    url = images.url(image.filename) # this should be unnecessary by now...
+    return render_template("photo.html", url=url, image=image)

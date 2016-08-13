@@ -1,49 +1,65 @@
 from flask import Markup, render_template, url_for
 from flask.ext.wtf import Form
 from wtforms import SubmitField, Label
+from wtforms.widgets.core import html_params
 
 
-class BaseForm(Form):
+class _Form(Form):
     """
-    Base class for all forms in the blog.
+    Super-class for all forms in the blog.
     """
-    _vertical = True
-    _labelled = True
-    _small = False
+    _modal = False
+    _inline = False
     _danger = False
 
     _endpoint = None
-    _endpoint_kwargs = {}
+    _endpoint_kwargs = None
+    _method = "POST"
+    _enctype = None
+    _form_classes = []
+
     _submit = None
-    title = None
+    _title = None
     submit = SubmitField()
 
-    _enctype = None
 
     def __init__(self, **kwargs):
-        super(BaseForm, self).__init__(**kwargs)
-        submit_label = self._submit or self.title or "Submit"
+        super(_Form, self).__init__(**kwargs)
+        submit_label = self._submit or self._title or "Submit"
         self.submit.label = Label("submit", submit_label)
 
+    def _id(self):
+        name = self.__class__.__name__
+        return name[0].lower() + name[1:]
+
     def _action(self):
-        if self._endpoint is not None:
-            return url_for(self._endpoint, **self._endpoint_kwargs)
+        if self._endpoint is not None and self._endpoint_kwargs is not None:
+            return url_for(self._endpoint, **self._endpoint_kwargs) # **?
+        elif self._endpoint is not None:
+            return url_for(self._endpoint)
         return None
 
-    def __call__(self, method="POST", action=None, enctype=None,
-                 vertical=None, labelled=None, small=None, danger=None):
-        action = action or self._action()
-        enctype = enctype or self._enctype
-        vertical = vertical or self._vertical
-        labelled = labelled or self._labelled
-        small = small or self._small
-        danger = danger or self._danger
+    def _classes(self):
+        if self._form_classes is not None:
+            return ' '.join(self._form_classes)
+        return None
+
+    def __html__(self):
+        return self()
+
+    def __call__(self, classes=None):
         return Markup( render_template( 'form.html',
-                                        form = self,
-                                        method = method,
-                                        action = action,
-                                        enctype = enctype,
-                                        vertical = vertical,
-                                        labelled = labelled,
-                                        small = small ,
-                                        danger = danger ) )
+                                        form = self) )
+
+
+class BaseForm(_Form):
+    pass
+
+
+class ModalForm(_Form):
+    _modal = True
+
+
+class InlineForm(_Form):
+    _inline = True
+    _form_classes = ['form-inline']

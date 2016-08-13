@@ -2,18 +2,35 @@
 
 {% block content %}
 
+<h2>Add more images</h2>
 {{ form() }}
 
-<h2>jQuery Example</h2>
-<p><input id="a" type=text size=5> +
+<!-- <form action="/post/file/_upload" method="POST" class="dropzone"></form> -->
+
+{{ form2() }}
+
+<h3>Uploaded images</h3>
+<div id="photos">
+{% for image in images %}
+<div style="float: left">
+  <img src="{{ image.url() }}" alt="{{ image.alternative }}" width="240">
+  <br>
+  <p>{{ image.caption }}</p>
+</div>
+{% endfor %}
+</div>
+
+<!-- <p><input id="a" type=text size=5> +
    <input id="b" type=text size=5> =
-   <span id=result>?</span>
+   <span id=result>?</span>-->
 <p><a href="javascript:calculate();" id=calculate>calculate server side</a>
 
 {% endblock %}
 
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+
 <script type=text/javascript>
   var csrftoken = "{{ csrf_token() }}"
 
@@ -24,20 +41,62 @@
         }
     }
   });
+  //
+  Dropzone.options.fileUpload = {
+    autoProcessQueue: false,
+    uploadMultiple: false,
 
-  function calculate() {
-    $.ajax({
-      url: '/post/_add_numbers',
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify({
-        a: $('#a').val(),
-        b: $('#b').val()
-      }),
-    }).done( function (data) {
-      $("#result").text(data.result);
-    });
+    init: function() {
+      var myDropzone = this;
+
+      // First change the button to actually tell Dropzone to process the queue.
+      this.element.querySelector("input[type=submit]").addEventListener("click", function(e) {
+        // Make sure that the form isn't actually being sent.
+        e.preventDefault();
+        e.stopPropagation();
+        myDropzone.processQueue();
+      });
+      this.on("sending", function() {
+        // Gets triggered when the form is actually being sent.
+        // Hide the success button or the complete form.
+      });
+      this.on("success", function(file, response) {
+        // console.log(file);
+        // console.log(response);
+        $("#photos").append(response.img);
+      });
+      this.on("error", function(files, response) {
+        // Gets triggered when there was an error sending the files.
+        // Maybe show form again, and notify user of error
+      });
+    }
   }
+  // $(function() {
+  //   $("#submit").bind(
+  //     "click",
+  //     function() {
+  //       $.ajax({
+  //         url: "/post/_upload",
+  //         type: "POST",
+  //         content
+  //       })
+  //     })
+  // })
+
+  //
+  // function calculate() {
+  //   $.ajax({
+  //     url: '/post/_add_numbers',
+  //     type: "POST",
+  //     contentType: "application/json",
+  //     data: JSON.stringify({
+  //       a: $('#a').val(),
+  //       b: $('#b').val()
+  //     }),
+  //   }).done( function (data) {
+  //     $("#result").text(data.result);
+  //   });
+  // }
 </script>
 
 {% endblock %}

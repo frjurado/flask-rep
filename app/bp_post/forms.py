@@ -2,7 +2,7 @@ import re
 from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileField
 from wtforms.validators import Required, Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
-from ..forms import BaseForm
+from ..forms import BaseForm, InlineForm, ModalForm
 from ..models.content import Post, Category
 
 
@@ -43,9 +43,7 @@ class PostForm(BaseForm):
             self._tag_list = [e.strip() for e in field.data.split(',') if e.strip()]
 
 
-class DeletePostForm(BaseForm):
-    _vertical = False
-    _labelled = False
+class DeletePostForm(InlineForm):
     _danger = True
 
     _endpoint = 'post.delete'
@@ -67,7 +65,7 @@ class DeletePostForm(BaseForm):
 
 
 ####
-class ImageForm(BaseForm):
+class ImageForm(BaseForm): # deprecated
     _enctype = "multipart/form-data"
     image = FileField("Image file", validators = [Required()])
     #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
@@ -76,3 +74,13 @@ class ImageForm(BaseForm):
 
     # def validate_image(form, field):
     #     field.data = re.sub(r'[^a-z0-9_-]', '_', field.data)
+
+class DropForm(ModalForm):
+    _submit = "Upload"
+    _title = "Upload a photo"
+    _endpoint = 'post._upload'
+    _enctype = "multipart/form-data"
+    _form_classes = ['dropzone']
+
+    alternative = StringField("Alternative text")
+    caption = TextAreaField("Caption")

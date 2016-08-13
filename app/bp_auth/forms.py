@@ -119,7 +119,7 @@ class ChangeUserForm(BaseForm):
 
 
 class SignupForm(UserForm):
-    title = "Sign up"
+    _title = "Sign up"
     email = EmailNewField()
     username = UsernameNewField()
     password = PasswordNewField()
@@ -127,14 +127,14 @@ class SignupForm(UserForm):
 
 
 class LoginForm(UserForm):
-    title = "Log in"
+    _title = "Log in"
     username_old = UsernameOldField()
     password_old = PasswordOldField()
     remember_me = BooleanField("Keep me logged in")
 
 
 class ChangeEmailForm(ChangeUserForm):
-    title = "Change email"
+    _title = "Change email"
     email = EmailNewField("New email")
     password_old = PasswordOldField()
 
@@ -146,7 +146,7 @@ class ChangeUsernameForm(ChangeUserForm):
 
 
 class ChangePasswordForm(ChangeUserForm):
-    title = "Change password"
+    _title = "Change password"
     password_old = PasswordOldField("Old password")
     password = PasswordNewField("New password")
     password_confirm = PasswordConfirmField("Confirm new password")
@@ -154,13 +154,13 @@ class ChangePasswordForm(ChangeUserForm):
 
 class ResetRequestForm(UserForm):
     _submit = "Reset"
-    title = "Request account reset"
+    _title = "Request account reset"
     email_old = EmailOldField()
 
 
 class ResetForm(UserForm):
     _submit = "Reset"
-    title = "Reset username and password"
+    _title = "Reset username and password"
     username = UsernameNewField("New username")
     password = PasswordNewField("New password")
     password_confirm = PasswordConfirmField()
