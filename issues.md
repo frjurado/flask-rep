@@ -64,7 +64,24 @@
     --> can I avoid Markup with __html__ method?
     --> generic dismiss form!
     --> better uploading thing!
-# how to get photos within text?
+# how to get photos within text? DONE!!!
+    --> post_image table or simple reference within body_md?
+        we'll use the database: --
+        * first do something with edit_post --> should simplify!
+    --> everything is WAY too messy
+    --> double photo list (old and new)
+    --> new photos don't have clipboard button --
+    --> error when author is None?
+
+#   --> non-ascii en titulos!
+
+  * fallo al arrastrar fotos??
+  * fallo cuando el post es nuevo (`IntegrityError: (raised as a result
+    of a Query-invoked autoflush; consider using a session.no_autoflush
+    block if this flush is ocurring prematurely) (...) post.name
+    may not be NULL [SQL INSERT INTO post (...) values (?, ?, ...)]
+    [parameters (...)]` --> almost everything is None!)                 --
+
 # main photo!
 
 
@@ -99,6 +116,7 @@
 * flask_ or flask.ext. ??
 
 * rethink HTTP methods
+* JS to scripts?
 
 * (future problem) cascade deletes? what happens with posts/comments by deleted users?
   (maybe you should just not delete them, but the posts/comments first)

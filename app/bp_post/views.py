@@ -53,10 +53,11 @@ def write():
     drop_form = DropForm()
     photos = Image.query.all()
     if form.validate_on_submit():
+        print "form validates"
         post = Post( name = form.name.data,
                      excerpt = form.excerpt.data,
                      body_md = form.body_md.data,
-                     author = current_user._get_current_object() ) # destroy current_user!
+                     author = current_user._get_current_object() )
         # tags
         set_tags(post, form._tag_list)
         # categories
@@ -74,6 +75,8 @@ def write():
 def edit(slug):
     post = get_or_404(Post, Post.slug == slug)
     form = PostForm(obj=post)
+    drop_form = DropForm()
+    photos = Image.query.all()
     if form.validate_on_submit():
         post.name = form.name.data
         post.excerpt = form.excerpt.data
@@ -87,8 +90,10 @@ def edit(slug):
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
     form.tags.data = ", ".join([tag.name for tag in post.tags])
-    form.old_category.data = post.category.id
-    return render_template('write_post.html', form=form)
+    if post.category is not None:
+        form.old_category.data = post.category.id
+    return render_template('write_post.html',
+                           form=form, drop_form=drop_form, photos=photos)
 
 
 @post.route('/delete/<slug>', methods=["POST"])

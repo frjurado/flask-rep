@@ -1,3 +1,4 @@
+import re
 from datetime import datetime as dt
 from bleach import linkify, clean
 from markdown import markdown
@@ -21,9 +22,7 @@ class MainContentMixin(object):
 class AuthorMixin(object):
     @declared_attr
     def author_id(cls):
-        return db.Column(db.Integer,
-                         db.ForeignKey("user.id"),
-                         default = current_user._get_current_object())
+        return db.Column(db.Integer, db.ForeignKey("user.id"))
 
 
 class NameMixin(object):
@@ -40,14 +39,15 @@ class NameMixin(object):
     def on_changed_name(cls, target, value, oldvalue, initiator):
         if value != oldvalue:
             base_slug = urlize(value)
-            slug = base_slug
+            slug = base_slug # one more line than needed
             i = 1
             while True:
-                if cls.query.filter_by(slug=slug).first() is None:
-                    target.slug = slug
-                    break
-                i = i + 1
-                slug = "{0}-{1}".format(base_slug, i)
+                with db.session.no_autoflush: # avoids IntegrityError!
+                    if cls.query.filter_by(slug=slug).first() is None:
+                        target.slug = slug
+                        break
+                    i = i + 1
+                    slug = "{0}-{1}".format(base_slug, i)
 
 
 class BodyMixin(object):
@@ -56,13 +56,25 @@ class BodyMixin(object):
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
-        tags = [
-            'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
-            'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p'
-        ]
-        target.body_html = linkify(clean(markdown(value,
-                                                  output_format='html'),
+        print "inside on_changed_body"
+        tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
+                'img', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
+        attributes = ['alt', 'class', 'id', 'height', 'href', 'rel',
+                      'src', 'title', 'width']
+        md = markdown(value, output_format='html')
+        photo_pattern = re.compile(r"(!\([^\s]+\.(?:jpe?g|png)\))")
+        photos = photo_pattern.findall(value)
+        for p in photos:
+            with db.session.no_autoflush: # avoids IntegrityError!
+                photo = Image.query.filter_by(filename=p[2:-1]).first()
+            if photo is not None:
+                md = md.replace(p, photo.img(linked=True, with_caption=True))
+                if not photo in target.images:
+                    target.images.append(photo)
+
+        target.body_html = linkify(clean(md,
                                          tags = tags,
+                                         attributes = attributes,
                                          strip = True))
 
 
@@ -210,7 +222,7 @@ db.event.listen(Tag.name, "set", Tag.on_changed_name)
 class Image(MainContentMixin, BaseModel):
     filename = db.Column(db.String(128), index=True, unique=True, nullable=False)
     alternative = db.Column(db.String(128))
-    caption =db.Column(db.Text)
+    caption = db.Column(db.Text)
     # relationship w/ Category
     category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
     category = db.relationship("Category",
@@ -226,3 +238,28 @@ class Image(MainContentMixin, BaseModel):
 
     def url(self):
         return images.url(self.filename)
+
+    def img(self, width=480, linked=False, with_caption=False):
+        img_tag = '<img src="{src}" alt="{alt}" width="{width}">'.format(
+            src = self.url(),
+            alt = self.alternative,
+            width = width
+        )
+        if linked:
+            img_tag = '<a href="{url}">{img_tag}</a>'.format(
+                url = self.url(),
+                img_tag = img_tag
+            )
+        if with_caption and self.caption is not None:
+            return Markup(
+                """
+                <figure>
+                  {img_tag}
+                  <figcaption>{caption}</figcaption>
+                </figure>
+                """.format(
+                    img_tag = img_tag,
+                    caption = self.caption
+                )
+            )
+        return Markup(img_tag)

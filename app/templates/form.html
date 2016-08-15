@@ -20,7 +20,7 @@
 {% endmacro %}
 
 
-{% macro core(labelled=True) %}
+{% macro fields(labelled=True) %}
 {% for field in form if field.type not in ("CSRFTokenField", "SubmitField") %}
   {% if field.type == "BooleanField" %}
   <div class="checkbox">
@@ -53,7 +53,7 @@
   {{ form_tag() }}
     {{ errors() }}
     {{ form.csrf_token }}
-    {{ core(labelled=False) }}
+    {{ fields(labelled=False) }}
     {{ submit() }}
   </form>
 </div>
@@ -82,7 +82,7 @@
           </div>
           {% endif %}
 
-          {{ core() }}
+          {{ fields() }}
         </div>
 
         <div class="modal-footer">
@@ -91,7 +91,7 @@
         </div>
       </form>
       <div id ="uploading" class="uploading text-center hidden">
-        <span class="glyphicon glyphicon-upload text-center" aria-hidden="true"></span>
+        <span class="glyphicon glyphicon-hourglass text-center" aria-hidden="true"></span>
       </div>
     </div>
   </div>
@@ -116,7 +116,7 @@
       </div>
       {% endif %}
 
-      {{ core() }}
+      {{ fields() }}
     </div>
 
     <div class="modal-footer">
