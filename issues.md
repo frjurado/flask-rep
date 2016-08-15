@@ -55,32 +55,23 @@
     * why does dz move?
     * now implement for post writing!!
 
-# two submits! --
-# when i submit photo, modal should close --
-# and it should empty itself --
-  --> just now reforming form.html (it's a mess!)
-    --> revise form classes and attributes
-    --> modal is a bit ugly
-    --> can I avoid Markup with __html__ method?
-    --> generic dismiss form!
-    --> better uploading thing!
-# how to get photos within text? DONE!!!
-    --> post_image table or simple reference within body_md?
-        we'll use the database: --
-        * first do something with edit_post --> should simplify!
-    --> everything is WAY too messy
-    --> double photo list (old and new)
-    --> new photos don't have clipboard button --
-    --> error when author is None?
 
-#   --> non-ascii en titulos!
+# and it empties itself (but not the rest of the form!)
+revise form.html
+modal: where is dropphoto/ugly border
+can I avoid Markup with __html__ method?
+generic dismiss form!
 
-  * fallo al arrastrar fotos??
-  * fallo cuando el post es nuevo (`IntegrityError: (raised as a result
-    of a Query-invoked autoflush; consider using a session.no_autoflush
-    block if this flush is ocurring prematurely) (...) post.name
-    may not be NULL [SQL INSERT INTO post (...) values (?, ?, ...)]
-    [parameters (...)]` --> almost everything is None!)                 --
+everything is somewhat messy
+
+# simplify write_/edit_post
+# edit_post / reload write_post should have post photos in the "new" list
+
+error when author is None?
+
+# non-ascii en titulos! -> SOLVE THIS!
+# photo max size!!
+
 
 # main photo!
 

@@ -68,7 +68,7 @@ class BodyMixin(object):
             with db.session.no_autoflush: # avoids IntegrityError!
                 photo = Image.query.filter_by(filename=p[2:-1]).first()
             if photo is not None:
-                md = md.replace(p, photo.img(linked=True, with_caption=True))
+                md = md.replace(p, photo.img(width="480", linked=True, with_caption=True))
                 if not photo in target.images:
                     target.images.append(photo)
 
@@ -239,11 +239,14 @@ class Image(MainContentMixin, BaseModel):
     def url(self):
         return images.url(self.filename)
 
-    def img(self, width=480, linked=False, with_caption=False):
-        img_tag = '<img src="{src}" alt="{alt}" width="{width}">'.format(
+    def img(self, width=None, linked=False, with_caption=False):
+        width_attr = ""
+        if width is not None:
+            width_attr = ' width="{}"'.format(width)
+        img_tag = '<img src="{src}" alt="{alt}"{width_attr}>'.format(
             src = self.url(),
             alt = self.alternative,
-            width = width
+            width_attr = width_attr
         )
         if linked:
             img_tag = '<a href="{url}">{img_tag}</a>'.format(

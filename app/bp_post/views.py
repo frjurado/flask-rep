@@ -51,7 +51,6 @@ def set_categories(post, old, new):
 def write():
     form = PostForm()
     drop_form = DropForm()
-    photos = Image.query.all()
     if form.validate_on_submit():
         print "form validates"
         post = Post( name = form.name.data,
@@ -66,8 +65,11 @@ def write():
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
+    photos = Image.query.all()
     return render_template('write_post.html',
-                           form=form, drop_form=drop_form, photos=photos)
+                           form=form,
+                           drop_form=drop_form,
+                           photos=photos)
 
 
 @post.route('/edit/<slug>', methods=["GET", "POST"])
@@ -76,7 +78,6 @@ def edit(slug):
     post = get_or_404(Post, Post.slug == slug)
     form = PostForm(obj=post)
     drop_form = DropForm()
-    photos = Image.query.all()
     if form.validate_on_submit():
         post.name = form.name.data
         post.excerpt = form.excerpt.data
@@ -89,11 +90,14 @@ def edit(slug):
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
+    photos = Image.query.all()
     form.tags.data = ", ".join([tag.name for tag in post.tags])
     if post.category is not None:
         form.old_category.data = post.category.id
     return render_template('write_post.html',
-                           form=form, drop_form=drop_form, photos=photos)
+                           form=form,
+                           drop_form=drop_form,
+                           photos=photos)
 
 
 @post.route('/delete/<slug>', methods=["POST"])
@@ -149,8 +153,7 @@ def _upload():
             caption = form.caption.data,
         )
         db.session.add(i)
-        img = '<img src="{}" alt="{}" width="240">'.format(i.url(), i.alternative)
-        return jsonify(img=img)
+        return jsonify(filename=i.filename, tag=i.img())
 
 @post.route('/file/<filename>')
 def file_view(filename):

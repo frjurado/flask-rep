@@ -118,8 +118,28 @@ h1, h2, p {
 .photo-list {
   border-left: 1px solid rgba(0, 0, 0, .2);
   border-right: 1px solid rgba(0, 0, 0, .2);
+  padding: 15px 15px 0 15px;
 }
 
 .flask-pagedown-preview {
   background-color: #dde;
+}
+
+.photo-thumbnail {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.photo-thumbnail img {
+  max-width:100%;
+}
+
+.to-clipboard {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+#uploadPhotos {
+  padding-top: 15px;
 }

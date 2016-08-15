@@ -30,7 +30,7 @@ class BaseModel(db.Model):
 
     def link(self, classes=None):
         return Markup(
-            "<a class='{2}' href={1}>{0}</a>".format(
+            u"<a class='{2}' href={1}>{0}</a>".format( #attention to u""
                 self._get_name(),
                 self._href(),
                 classes or ""
