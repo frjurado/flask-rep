@@ -62,6 +62,7 @@ class User(UserMixin, BaseModel):
     role = db.relationship("Role", back_populates="users")
     # relationship w/ content.py models
     posts = db.relationship("Post", backref="author")
+    comments = db.relationship("Comment", backref="author")
     #
     _endpoint = "main.author"
 

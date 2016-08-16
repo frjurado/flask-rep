@@ -55,22 +55,23 @@ class BodyMixin(object):
     body_md = db.Column(db.Text)
     body_html = db.Column(db.Text)
 
-    @staticmethod
-    def on_changed_body(target, value, oldvalue, initiator):
+    @classmethod
+    def on_changed_body(cls, target, value, oldvalue, initiator):
         tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
                 'img', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
         attributes = ['alt', 'class', 'id', 'height', 'href', 'rel',
                       'src', 'title', 'width']
         md = markdown(value, output_format='html')
-        photo_pattern = re.compile(r"(!\([^\s]+\.(?:jpe?g|png)\))")
-        photos = photo_pattern.findall(value)
-        for p in photos:
-            with db.session.no_autoflush: # avoids IntegrityError!
-                photo = Image.query.filter_by(filename=p[2:-1]).first()
-            if photo is not None:
-                md = md.replace(p, photo.img(width="480", linked=True, with_caption=True))
-                if not photo in target.images:
-                    target.images.append(photo)
+        if cls.__name__ == "Post":
+            photo_pattern = re.compile(r"(!\([^\s]+\.(?:jpe?g|png)\))")
+            photos = photo_pattern.findall(value)
+            for p in photos:
+                with db.session.no_autoflush: # avoids IntegrityError!
+                    photo = Image.query.filter_by(filename=p[2:-1]).first()
+                if photo is not None:
+                    md = md.replace(p, photo.img(width="480", linked=True, with_caption=True))
+                    if not photo in target.images:
+                        target.images.append(photo)
 
         target.body_html = linkify(clean(md,
                                          tags = tags,
@@ -266,3 +267,21 @@ class Image(MainContentMixin, BaseModel):
                 )
             )
         return Markup(img_tag)
+
+
+class Comment(MainContentMixin, BodyMixin, AuthorMixin, BaseModel):
+    author_email = db.Column(db.String(128))
+    author_name = db.Column(db.String(128))
+    author_url = db.Column(db.String(128))
+    # relationship w/ Post
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
+    post = db.relationship("Post",
+                           backref = "comments",
+                           foreign_keys = post_id)
+    # hierarchy
+    parent_id = db.Column(db.Integer, db.ForeignKey("comment.id"))
+    children = db.relationship("Comment",
+                               backref = db.backref("parent", remote_side='Comment.id'),
+                               foreign_keys = parent_id)
+
+db.event.listen(Comment.body_md, "set", Comment.on_changed_body)

@@ -1,13 +1,13 @@
-"""00 Initial migration [role, user, post, category, tag, image]
+"""00 Initial migration
 
-Revision ID: f4a5ff8c9663
+Revision ID: 7b306c2efb8e
 Revises: None
-Create Date: 2016-08-08 18:41:29.510000
+Create Date: 2016-08-16 17:49:38.138000
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'f4a5ff8c9663'
+revision = '7b306c2efb8e'
 down_revision = None
 
 from alembic import op
@@ -31,11 +31,28 @@ def upgrade():
     sa.ForeignKeyConstraint(['parent_id'], ['category.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('category', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_category_created'), ['created'], unique=False)
-        batch_op.create_index(batch_op.f('ix_category_name'), ['name'], unique=True)
-        batch_op.create_index(batch_op.f('ix_category_slug'), ['slug'], unique=True)
-
+    op.create_index(op.f('ix_category_created'), 'category', ['created'], unique=False)
+    op.create_index(op.f('ix_category_name'), 'category', ['name'], unique=True)
+    op.create_index(op.f('ix_category_slug'), 'category', ['slug'], unique=True)
+    op.create_table('comment',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('created', sa.DateTime(), nullable=True),
+    sa.Column('modified', sa.DateTime(), nullable=True),
+    sa.Column('status', sa.Boolean(), nullable=True),
+    sa.Column('body_md', sa.Text(), nullable=True),
+    sa.Column('body_html', sa.Text(), nullable=True),
+    sa.Column('author_email', sa.String(length=128), nullable=True),
+    sa.Column('author_name', sa.String(length=128), nullable=True),
+    sa.Column('author_url', sa.String(length=128), nullable=True),
+    sa.Column('post_id', sa.Integer(), nullable=True),
+    sa.Column('parent_id', sa.Integer(), nullable=True),
+    sa.Column('author_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['author_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['parent_id'], ['comment.id'], ),
+    sa.ForeignKeyConstraint(['post_id'], ['post.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_comment_created'), 'comment', ['created'], unique=False)
     op.create_table('image',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=True),
@@ -48,10 +65,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('image', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_image_created'), ['created'], unique=False)
-        batch_op.create_index(batch_op.f('ix_image_filename'), ['filename'], unique=True)
-
+    op.create_index(op.f('ix_image_created'), 'image', ['created'], unique=False)
+    op.create_index(op.f('ix_image_filename'), 'image', ['filename'], unique=True)
     op.create_table('menuitem',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('item_type', sa.String(length=128), nullable=False),
@@ -79,11 +94,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['main_image_id'], ['image.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('post', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_post_created'), ['created'], unique=False)
-        batch_op.create_index(batch_op.f('ix_post_name'), ['name'], unique=True)
-        batch_op.create_index(batch_op.f('ix_post_slug'), ['slug'], unique=True)
-
+    op.create_index(op.f('ix_post_created'), 'post', ['created'], unique=False)
+    op.create_index(op.f('ix_post_name'), 'post', ['name'], unique=True)
+    op.create_index(op.f('ix_post_slug'), 'post', ['slug'], unique=True)
     op.create_table('post_image',
     sa.Column('post_id', sa.Integer(), nullable=True),
     sa.Column('image_id', sa.Integer(), nullable=True),
@@ -103,10 +116,8 @@ def upgrade():
     sa.Column('default', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('role', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_role_default'), ['default'], unique=False)
-        batch_op.create_index(batch_op.f('ix_role_name'), ['name'], unique=True)
-
+    op.create_index(op.f('ix_role_default'), 'role', ['default'], unique=False)
+    op.create_index(op.f('ix_role_name'), 'role', ['name'], unique=True)
     op.create_table('tag',
     sa.Column('created', sa.DateTime(), nullable=True),
     sa.Column('modified', sa.DateTime(), nullable=True),
@@ -117,11 +128,9 @@ def upgrade():
     sa.ForeignKeyConstraint(['id'], ['menuitem.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    with op.batch_alter_table('tag', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_tag_created'), ['created'], unique=False)
-        batch_op.create_index(batch_op.f('ix_tag_name'), ['name'], unique=True)
-        batch_op.create_index(batch_op.f('ix_tag_slug'), ['slug'], unique=True)
-
+    op.create_index(op.f('ix_tag_created'), 'tag', ['created'], unique=False)
+    op.create_index(op.f('ix_tag_name'), 'tag', ['name'], unique=True)
+    op.create_index(op.f('ix_tag_slug'), 'tag', ['slug'], unique=True)
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=128), nullable=False),
@@ -136,49 +145,37 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
-    with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.create_index(batch_op.f('ix_user_email'), ['email'], unique=True)
-        batch_op.create_index(batch_op.f('ix_user_username'), ['username'], unique=True)
-
+    op.create_index(op.f('ix_user_email'), 'user', ['email'], unique=True)
+    op.create_index(op.f('ix_user_username'), 'user', ['username'], unique=True)
     ### end Alembic commands ###
 
 
 def downgrade():
     ### commands auto generated by Alembic - please adjust! ###
-    with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_user_username'))
-        batch_op.drop_index(batch_op.f('ix_user_email'))
-
+    op.drop_index(op.f('ix_user_username'), table_name='user')
+    op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
-    with op.batch_alter_table('tag', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_tag_slug'))
-        batch_op.drop_index(batch_op.f('ix_tag_name'))
-        batch_op.drop_index(batch_op.f('ix_tag_created'))
-
+    op.drop_index(op.f('ix_tag_slug'), table_name='tag')
+    op.drop_index(op.f('ix_tag_name'), table_name='tag')
+    op.drop_index(op.f('ix_tag_created'), table_name='tag')
     op.drop_table('tag')
-    with op.batch_alter_table('role', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_role_name'))
-        batch_op.drop_index(batch_op.f('ix_role_default'))
-
+    op.drop_index(op.f('ix_role_name'), table_name='role')
+    op.drop_index(op.f('ix_role_default'), table_name='role')
     op.drop_table('role')
     op.drop_table('post_tag')
     op.drop_table('post_image')
-    with op.batch_alter_table('post', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_post_slug'))
-        batch_op.drop_index(batch_op.f('ix_post_name'))
-        batch_op.drop_index(batch_op.f('ix_post_created'))
-
+    op.drop_index(op.f('ix_post_slug'), table_name='post')
+    op.drop_index(op.f('ix_post_name'), table_name='post')
+    op.drop_index(op.f('ix_post_created'), table_name='post')
     op.drop_table('post')
     op.drop_table('menuitem')
-    with op.batch_alter_table('image', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_image_filename'))
-        batch_op.drop_index(batch_op.f('ix_image_created'))
-
+    op.drop_index(op.f('ix_image_filename'), table_name='image')
+    op.drop_index(op.f('ix_image_created'), table_name='image')
     op.drop_table('image')
-    with op.batch_alter_table('category', schema=None) as batch_op:
-        batch_op.drop_index(batch_op.f('ix_category_slug'))
-        batch_op.drop_index(batch_op.f('ix_category_name'))
-        batch_op.drop_index(batch_op.f('ix_category_created'))
-
+    op.drop_index(op.f('ix_comment_created'), table_name='comment')
+    op.drop_table('comment')
+    op.drop_index(op.f('ix_category_slug'), table_name='category')
+    op.drop_index(op.f('ix_category_name'), table_name='category')
+    op.drop_index(op.f('ix_category_created'), table_name='category')
     op.drop_table('category')
     ### end Alembic commands ###

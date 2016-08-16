@@ -84,6 +84,15 @@ error when author is None?
 * Some `render_as_batch=True` is to be added to `env.py`...
 
 
+**COMMENT**
+* First problem: adjacency list pattern fails (backref's remote side colides
+  with builtin 'id'). Solved differently than on Category.
+
+* Build AJAX form for first-level comments.
+* Order comments on created.desc(), then
+  * apply form to nested comments.
+  
+
 **********************************
 * revise macros, form macros and use modern system for rendering...
 * user_forms macro is not very good (implies table, can be empty, ...)

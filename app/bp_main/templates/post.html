@@ -40,4 +40,14 @@
 </div>
 {% endif %}
 
+{% if post.comments %}
+<div class="comments">
+  {% for comment in post.comments %}
+  <div>
+    {{ comment.author or comment.author_name }} - {{ comment.body_html | safe }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 {% endblock %}
