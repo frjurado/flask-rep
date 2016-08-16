@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime as dt
 from hashlib import md5
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -82,7 +83,7 @@ class User(UserMixin, BaseModel):
     #password
     @property
     def password(self):
-        raise AttributeError("password is not a readable attribute")
+        raise AttributeError(u"password is not a readable attribute")
 
     @password.setter
     def password(self, password):

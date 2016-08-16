@@ -1,4 +1,5 @@
-from flask import render_template, redirect, url_for, flash, request
+# -*- coding: utf-8 -*-
+from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask.ext.login import login_required, current_user
 from . import post
 from .forms import PostForm, DeletePostForm, ImageForm, DropForm
@@ -52,7 +53,6 @@ def write():
     form = PostForm()
     drop_form = DropForm()
     if form.validate_on_submit():
-        print "form validates"
         post = Post( name = form.name.data,
                      excerpt = form.excerpt.data,
                      body_md = form.body_md.data,
@@ -65,11 +65,11 @@ def write():
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
-    photos = Image.query.all()
+    old_photos = Image.query.all()
     return render_template('write_post.html',
                            form=form,
                            drop_form=drop_form,
-                           photos=photos)
+                           old_photos=old_photos)
 
 
 @post.route('/edit/<slug>', methods=["GET", "POST"])
@@ -87,17 +87,20 @@ def edit(slug):
         set_tags(post, form._tag_list)
         # categories
         set_categories(post, form.old_category.data, form._category_list)
+        #
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
-    photos = Image.query.all()
+    new_photos = post.images
+    old_photos = Image.query.filter(~Image.id.in_([i.id for i in post.images])).all()
     form.tags.data = ", ".join([tag.name for tag in post.tags])
     if post.category is not None:
         form.old_category.data = post.category.id
     return render_template('write_post.html',
                            form=form,
                            drop_form=drop_form,
-                           photos=photos)
+                           new_photos=new_photos,
+                           old_photos=old_photos)
 
 
 @post.route('/delete/<slug>', methods=["POST"])
@@ -107,40 +110,11 @@ def delete(slug):
     form = DeletePostForm()
     if form.validate_on_submit():
         db.session.delete(form.post)
-        flash("Post was deleted.")
+        flash(u"Post was deleted.")
         return redirect(url_for('main.index'))
-    flash("Somethong bad happened.")
+    flash(u"Somethong bad happened.")
     return redirect(url_for('main.index')) # referrer?
 
-# AJAX
-from flask import jsonify
-
-@post.route('/_add_numbers', methods=["POST"])
-def add_numbers():
-    data = request.get_json()
-    print data
-    a = int(data.get("a", 0))
-    b = int(data.get("b", 0))
-    return jsonify(result=a + b)
-
-####
-@post.route('/file/upload', methods=['GET', 'POST'])
-def file_upload():
-    uploaded_images = Image.query.all()
-    form = ImageForm()
-    form2 = DropForm()
-    if form.validate_on_submit():
-        filename = images.save(request.files['image'])
-        i = Image(
-            filename=filename,
-            alternative = form.alternative.data,
-            caption = form.caption.data,
-        )
-        db.session.add(i)
-        flash("Photo was saved!")
-        return redirect(url_for('post.file_upload'))
-    return render_template('file_upload.html',
-    form=form, form2=form2, images=uploaded_images)
 
 @post.route('/file/_upload', methods=["POST"])
 def _upload():
@@ -154,9 +128,3 @@ def _upload():
         )
         db.session.add(i)
         return jsonify(filename=i.filename, tag=i.img())
-
-@post.route('/file/<filename>')
-def file_view(filename):
-    image = get_or_404(Image, Image.filename == filename)
-    url = images.url(image.filename) # this should be unnecessary by now...
-    return render_template("photo.html", url=url, image=image)

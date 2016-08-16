@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import render_template, flash, redirect, url_for, request, abort
 from flask.ext.login import current_user, login_required
 from . import user
@@ -49,14 +50,14 @@ def edit_profile(username):
     elif 'url' in request.form:  #
         form = UrlForm()         #
     else:                        #
-        flash("Invalid request.")#
+        flash(u"Invalid request.")#
         abort(404)               # ...to here: ugly! (within the form class?)
     if form.validate_on_submit():
         user = form.user
         form.populate_obj(user)
         db.session.add(user)
         return redirect(url_for('user.profile', username=username))
-    flash("Invalid form thing") # ugly...
+    flash(u"Invalid form thing") # ugly...
     return redirect(url_for('user.profile', username=username))
 
 
@@ -68,7 +69,7 @@ def assign_role(username):
     if form.validate_on_submit():
         # population is done within the form itself!
         return redirect(url_for('user.profile', username=username)) # but if list...
-    flash("Invalid form thing") # ugly...
+    flash(u"Invalid form thing") # ugly...
     return redirect(url_for('user.profile', username=username))
 
 
@@ -80,7 +81,7 @@ def delete_account(username):
     if form.validate_on_submit():
         # should check it's a guest!
         db.session.delete(form.user)
-        flash("The user account was deleted.")
+        flash(u"The user account was deleted.")
         return redirect(url_for('user.list'))
-    flash("Something bad happened.")
+    flash(u"Something bad happened.")
     return redirect(url_for('user.list'))

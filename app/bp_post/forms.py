@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileField
 from wtforms.validators import Required, Regexp, InputRequired, ValidationError
@@ -7,20 +8,20 @@ from ..models.content import Post, Category
 
 
 class PostForm(BaseForm):
-    _submit = "Submit post"
+    _submit = u"Submit post"
 
-    name = StringField("Title", validators=[InputRequired()])
-    excerpt = TextAreaField("Excerpt", validators=[InputRequired()])
-    old_category = SelectField("Old category", coerce=int) # use a form field!
-    new_category = StringField("New category")
+    name = StringField(u"Title", validators=[InputRequired()])
+    excerpt = TextAreaField(u"Excerpt", validators=[InputRequired()])
+    old_category = SelectField(u"Old category", coerce=int) # use a form field!
+    new_category = StringField(u"New category")
     _category_list = None
-    tags = StringField("Tags")
+    tags = StringField(u"Tags")
     _tag_list = None
-    body_md = PageDownField("Body", validators=[InputRequired()])
+    body_md = PageDownField(u"Body", validators=[InputRequired()])
 
     def __init__(self, **kwargs):
         super(PostForm, self).__init__(**kwargs)
-        self.old_category.choices = [(0, "No category")]
+        self.old_category.choices = [(0, u"No category")]
         stack = Category.query.filter_by(parent_id=None)\
                               .order_by(Category.name.desc())\
                               .all()
@@ -36,7 +37,7 @@ class PostForm(BaseForm):
             self._category_list = [e.strip() for e in field.data.split(">")]
             for name in self._category_list:
                 if Category.query.filter_by(name=name).first() is not None:
-                    raise ValidationError("Don't recreate an existing category.")
+                    raise ValidationError(u"Don't recreate an existing category.")
 
     def validate_tags(self, field):
         if field.data is not None:
@@ -47,7 +48,7 @@ class DeletePostForm(InlineForm):
     _danger = True
 
     _endpoint = 'post.delete'
-    _submit = "Delete"
+    _submit = u"Delete"
 
     slug = HiddenField(validators=[InputRequired()])
 
@@ -67,20 +68,20 @@ class DeletePostForm(InlineForm):
 ####
 class ImageForm(BaseForm): # deprecated
     _enctype = "multipart/form-data"
-    image = FileField("Image file", validators = [Required()])
+    image = FileField(u"Image file", validators = [Required()])
     #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
-    alternative = StringField("Alternative text")
-    caption = TextAreaField("Caption")
+    alternative = StringField(u"Alternative text")
+    caption = TextAreaField(u"Caption")
 
     # def validate_image(form, field):
     #     field.data = re.sub(r'[^a-z0-9_-]', '_', field.data)
 
 class DropForm(ModalForm):
-    _submit = "Upload"
-    _title = "Upload a photo"
+    _submit = u"Upload"
+    _title = u"Upload a photo"
     _endpoint = 'post._upload'
     _enctype = "multipart/form-data"
     _form_classes = ['dropzone']
 
-    alternative = StringField("Alternative text")
-    caption = TextAreaField("Caption")
+    alternative = StringField(u"Alternative text")
+    caption = TextAreaField(u"Caption")

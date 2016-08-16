@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 from datetime import datetime as dt
 from bleach import linkify, clean
@@ -32,7 +33,7 @@ class NameMixin(object):
 
     def _href(self):
         if self._endpoint is None:
-            raise NotImplementedError("you must define an _endpoint")
+            raise NotImplementedError(u"you must define an _endpoint")
         return url_for(self._endpoint, slug=self.slug)
 
     @classmethod
@@ -56,7 +57,6 @@ class BodyMixin(object):
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
-        print "inside on_changed_body"
         tags = ['a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i',
                 'img', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2', 'h3', 'p']
         attributes = ['alt', 'class', 'id', 'height', 'href', 'rel',
@@ -133,7 +133,7 @@ class Post(MainContentMixin, NameMixin, BodyMixin, AuthorMixin, MenuItem):
 
     def edit_link(self):
         href = url_for("post.edit", slug=self.slug)
-        link = "<a class='btn btn-primary' href={}>Edit</a>".format(href)
+        link = u"<a class='btn btn-primary' href={}>Edit</a>".format(href)
         return Markup(link)
 
     def delete_form(self):
@@ -255,7 +255,7 @@ class Image(MainContentMixin, BaseModel):
             )
         if with_caption and self.caption is not None:
             return Markup(
-                """
+                u"""
                 <figure>
                   {img_tag}
                   <figcaption>{caption}</figcaption>

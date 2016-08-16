@@ -25,10 +25,18 @@
       Upload a photo
     </button>
     <div id="uploadPhotos">
+      {% for image in new_photos %}
+      <div class="photo-thumbnail">
+        <button type="button" class="to-clipboard btn btn-default btn-sm hidden" data-clipboard-text="!({{ image.filename }})">
+          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </button>
+        {{ image.img() }}
+      </div>
+      {% endfor %}
     </div>
   </div>
   <div role="tabpanel" class="tab-pane" id="oldPhotos">
-    {% for image in photos %}
+    {% for image in old_photos %}
     <div class="photo-thumbnail">
       <button type="button" class="to-clipboard btn btn-default btn-sm hidden" data-clipboard-text="!({{ image.filename }})">
         <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
@@ -108,6 +116,7 @@
       this.on("complete", function (file) {
         $("#uploading").addClass("hidden");
         myDropzone.removeFile(file);
+        $("#alternative, #caption").attr("value", "");
       });
     }
   }

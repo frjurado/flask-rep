@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from app import create_app, db
 from app.models.users import Permission, Role, User, AnonymousUser

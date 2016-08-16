@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 import time
 from app import create_app, db
@@ -6,6 +7,8 @@ from sqlalchemy.exc import IntegrityError
 
 
 class UserModelTestCase(unittest.TestCase):
+    """
+    """
     def setUp(self):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
@@ -21,83 +24,83 @@ class UserModelTestCase(unittest.TestCase):
     # NOT_NULL
     def test_email_not_nullable(self):
         with self.assertRaises(IntegrityError):
-            u = User(username="u", password="cat")
+            u = User(username=u"u", password=u"cat")
             db.session.add(u)
             db.session.commit()
 
     def test_username_not_nullable(self):
         with self.assertRaises(IntegrityError):
-            u = User(email="u@example.com", password="cat")
+            u = User(email=u"u@example.com", password=u"cat")
             db.session.add(u)
             db.session.commit()
 
     def test_password_not_nullable(self):
         with self.assertRaises(IntegrityError):
-            u = User(email="u@example.com", username="u")
+            u = User(email=u"u@example.com", username=u"u")
             db.session.add(u)
             db.session.commit()
 
     # UNIQUE
     def test_email_unique(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat")
         db.session.add(u1)
         db.session.commit()
         with self.assertRaises(IntegrityError):
-            u2 = User(email="u1@example.com", username="u2", password="cat")
+            u2 = User(email=u"u1@example.com", username=u"u2", password=u"cat")
             db.session.add(u2)
             db.session.commit()
 
     def test_username_unique(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat")
         db.session.add(u1)
         db.session.commit()
         with self.assertRaises(IntegrityError):
-            u2 = User(email="u2@example.com", username="u1", password="cat")
+            u2 = User(email=u"u2@example.com", username=u"u1", password=u"cat")
             db.session.add(u2)
             db.session.commit()
 
     def test_name_unique(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat",
-                  name="User 1")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat",
+                  name=u"User 1")
         db.session.add(u1)
         db.session.commit()
         with self.assertRaises(IntegrityError):
-            u2 = User(email="u2@example.com", username="u2", password="cat",
-                      name="User 1")
+            u2 = User(email=u"u2@example.com", username=u"u2", password=u"cat",
+                      name=u"User 1")
             db.session.add(u2)
             db.session.commit()
 
     # passwords
     def test_password_setter(self):
-        u = User(email="u@example.com", username="u", password="cat")
+        u = User(email=u"u@example.com", username=u"u", password=u"cat")
         self.assertTrue(u.password_hash is not None)
 
     def test_no_password_getter(self):
-        u = User(email="u@example.com", username="u", password="cat")
+        u = User(email=u"u@example.comu", username=u"u", password=u"cat")
         with self.assertRaises(AttributeError):
             u.password
 
     def test_password_verification(self):
-        u = User(email="u@example.com", username="u", password="cat")
-        self.assertTrue(u.verify_password('cat'))
-        self.assertFalse(u.verify_password('dog'))
+        u = User(email=u"u@example.com", username=u"u", password=u"cat")
+        self.assertTrue(u.verify_password(u"cat"))
+        self.assertFalse(u.verify_password(u"dog"))
 
     def test_password_salts_are_random(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat")
-        u2 = User(email="u2@example.com", username="u2", password="cat")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat")
+        u2 = User(email=u"u2@example.com", username=u"u2", password=u"cat")
         self.assertTrue(u1.password_hash != u2.password_hash)
 
     # confirmation token
     def test_valid_confirmation_token(self):
-        u = User(email="u@example.com", password="cat")
+        u = User(email=u"u@example.com", password=u"cat")
         db.session.add(u)
         db.session.commit()
         token = u.generate_confirmation_token()
         self.assertTrue(u.confirm(token))
 
     def test_invalid_confirmation_token(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat")
-        u2 = User(email="u2@example.com", username="u2", password="cat")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat")
+        u2 = User(email=u"u2@example.com", username=u"u2", password=u"cat")
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
@@ -105,7 +108,7 @@ class UserModelTestCase(unittest.TestCase):
         self.assertFalse(u2.confirm(token))
 
     def test_expired_confirmation_token(self):
-        u = User(email="u@example.com", username="u", password="cat")
+        u = User(email=u"u@example.com", username=u"u", password=u"cat")
         db.session.add(u)
         db.session.commit()
         token = u.generate_confirmation_token(1)
@@ -124,32 +127,32 @@ class UserModelTestCase(unittest.TestCase):
 
     # change email
     def test_valid_email_change(self):
-        u = User(email="u@example.com", username="u", password="cat")
+        u = User(email=u"u@example.com", username=u"u", password=u"cat")
         db.session.add(u)
         db.session.commit()
-        token = u.generate_email_change_token("user@example.com")
+        token = u.generate_email_change_token(u"user@example.com")
         self.assertTrue(u.change_email(token))
-        self.assertTrue(u.email == "user@example.com")
+        self.assertTrue(u.email == u"user@example.com")
 
     def test_invalid_email_change(self):
-        u1 = User(email="u1@example.com", username="u1", password="cat")
-        u2 = User(email="u2@example.com", username="u2", password="cat")
+        u1 = User(email=u"u1@example.com", username=u"u1", password=u"cat")
+        u2 = User(email=u"u2@example.com", username=u"u2", password=u"cat")
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
-        token = u1.generate_email_change_token("user1@example.com")
+        token = u1.generate_email_change_token(u"user1@example.com")
         self.assertFalse(u2.change_email(token))
-        self.assertFalse(u1.email == "user1@example.com")
-        self.assertFalse(u2.email == "user1@example.com")
+        self.assertFalse(u1.email == u"user1@example.com")
+        self.assertFalse(u2.email == u"user1@example.com")
 
     def test_expired_email_change(self):
-        u = User(email="u@example.com", username="u", password="cat")
+        u = User(email=u"u@example.com", username=u"u", password=u"cat")
         db.session.add(u)
         db.session.commit()
-        token = u.generate_email_change_token("user1@example.com", 1)
+        token = u.generate_email_change_token(u"user1@example.com", 1)
         time.sleep(2)
         self.assertFalse(u.change_email(token))
-        self.assertFalse(u.email == "user@example.com")
+        self.assertFalse(u.email == u"user@example.com")
 
     # roles and permissions
     # def test_roles_and_permissions(self):

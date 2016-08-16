@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import Markup, render_template, url_for
 from flask.ext.wtf import Form
 from wtforms import SubmitField, Label
@@ -25,8 +26,8 @@ class _Form(Form):
 
     def __init__(self, **kwargs):
         super(_Form, self).__init__(**kwargs)
-        submit_label = self._submit or self._title or "Submit"
-        self.submit.label = Label("submit", submit_label)
+        submit_label = self._submit or self._title or u"Submit"
+        self.submit.label = Label('submit', submit_label)
 
     def _id(self):
         name = self.__class__.__name__

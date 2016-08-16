@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import re
 from unidecode import unidecode
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -32,7 +33,7 @@ def load_token(serializer, token):
         return None
 
 
-def invalid_token(message="Invalid or expired token"):
+def invalid_token(message=u"Invalid or expired token"):
     flash(message)
     abort(404)
 

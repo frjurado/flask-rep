@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import url_for
 from wtforms import StringField, SelectField, HiddenField
 from wtforms.validators import Required, URL, ValidationError
@@ -18,28 +19,28 @@ class UserForm(InlineForm):
     def validate_username(self, field):
         user = User.query.filter_by(username=field.data).first()
         if user is None:
-            raise ValidationError("Invalid user.")
+            raise ValidationError(u"Invalid user.")
         self.user = user
 
 
 class NameForm(UserForm):
-    _submit = "Change name"
-    name = StringField("Name", validators = [Required()])
+    _submit = u"Change name"
+    name = StringField(u"Name", validators = [Required()])
 
 
 class UrlForm(UserForm):
-    _submit = "Change URL"
-    url = StringField("URL", validators = [Required(), URL()])
+    _submit = u"Change URL"
+    url = StringField(u"URL", validators = [Required(), URL()])
 
 
 class DeleteForm(UserForm):
     _danger = True
-    _submit = "Delete account"
+    _submit = u"Delete account"
     _endpoint = 'user.delete_account'
 
 
 class RoleForm(UserForm):
-    _submit = "Change role"
+    _submit = u"Change role"
     _endpoint = 'user.assign_role'
     role = SelectField("Role", coerce=int, validators=[Required()])
 
@@ -53,4 +54,4 @@ class RoleForm(UserForm):
 
     def validate_role(self, field):
         if not self.user.set_role(field.data):
-            raise ValidationError("Invalid role.")
+            raise ValidationError(u"Invalid role.")

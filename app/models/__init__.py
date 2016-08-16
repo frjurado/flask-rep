@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from sqlalchemy.ext.declarative import declared_attr
 from flask import Markup
 from .. import db
@@ -30,7 +31,7 @@ class BaseModel(db.Model):
 
     def link(self, classes=None):
         return Markup(
-            u"<a class='{2}' href={1}>{0}</a>".format( #attention to u""
+            u"<a class='{2}' href={1}>{0}</a>".format(
                 self._get_name(),
                 self._href(),
                 classes or ""

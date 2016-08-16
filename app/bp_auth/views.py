@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import request, render_template, redirect, url_for, flash
 from flask.ext.login import current_user, login_user, logout_user, \
         login_required, fresh_login_required
@@ -35,7 +36,7 @@ def signup():
         db.session.commit()
         token = user.generate_confirmation_token()
         email.confirm(user, token)
-        flash("A confirmation link has been sent to you. Please check email.")
+        flash(u"A confirmation link has been sent to you. Please check email.")
         login_user(user)
         return to_dashboard()
     return auth_form(form, signup=True)
@@ -52,7 +53,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         login_user(form.user, form.remember_me.data)
-        flash("Welcome back!")
+        flash(u"Welcome back!")
         return to_dashboard()
     return auth_form(form, login=True)
 
@@ -61,7 +62,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash("See you soon!")
+    flash(u"See you soon!")
     return next_or_index()
 
 
@@ -73,11 +74,11 @@ def resend_confirmation():
     Get a new confirmation token (if expired or if mail was lost).
     """
     if current_user.confirmed:
-        flash("Your account is already confirmed.")
+        flash(u"Your account is already confirmed.")
         return next_or_index()
     token = current_user.generate_confirmation_token()
     email.confirm(current_user, token)
-    flash("A new confirmation link has been sent to you. Please check email.")
+    flash(u"A new confirmation link has been sent to you. Please check email.")
     return to_dashboard()
 
 
@@ -92,7 +93,7 @@ def confirm(token):
         return next_or_index()
     if not current_user.confirm(token):
         invalid_token()
-    flash("You have confirmed your account. Welcome!")
+    flash(u"You have confirmed your account. Welcome!")
     return to_dashboard()
 
 
@@ -109,7 +110,7 @@ def change_email_request():
         new_email = form.email.data
         token = current_user.generate_email_change_token(new_email)
         email.change_email(current_user, new_email, token)
-        flash("A confirmation link has been sent to your new email.")
+        flash(u"A confirmation link has been sent to your new email.")
         return to_dashboard()
     return auth_form(form)
 
@@ -123,7 +124,7 @@ def change_email(token):
     """
     if not current_user.change_email(token):
         invalid_token()
-    flash("Your new email has been confirmed.")
+    flash(u"Your new email has been confirmed.")
     return to_dashboard()
 
 
@@ -134,7 +135,7 @@ def change_username():
     if form.validate_on_submit():
         current_user.username = form.username.data
         db.session.add(current_user)
-        flash("You changed your username.")
+        flash(u"You changed your username.")
         return to_dashboard()
     return auth_form(form)
 
@@ -146,7 +147,7 @@ def change_password():
     if form.validate_on_submit():
         current_user.password = form.password.data
         db.session.add(current_user)
-        flash("You changed your password.")
+        flash(u"You changed your password.")
         return to_dashboard()
     return auth_form(form)
 
@@ -162,7 +163,7 @@ def reset_request():
     if form.validate_on_submit():
         token = form.user.generate_reset_token()
         email.reset(form.user, token)
-        flash("An email with instructions has been sent to you.")
+        flash(u"An email with instructions has been sent to you.")
         return next_or_index()
     return auth_form(form)
 
@@ -178,6 +179,6 @@ def reset(token):
     if form.validate_on_submit():
         form.user.reset(form.username.data, form.password.data)
         login_user(form.user)
-        flash("Your username and password have been updated.")
+        flash(u"Your username and password have been updated.")
         return to_dashboard()
     return auth_form(form)

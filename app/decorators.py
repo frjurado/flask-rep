@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from functools import wraps
 from flask import current_app, abort, redirect, url_for, flash
 from flask.ext.login import current_user
@@ -13,7 +14,7 @@ def signup_enabled(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_app.config['SIGNUP_ENABLED']:
-            flash("Signup is disabled.")
+            flash(u"Signup is disabled.")
             abort(404)
         return f(*args, **kwargs)
     return decorated_function
@@ -27,7 +28,7 @@ def anonymous_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_anonymous:
-            flash("You're already logged in.")
+            flash(u"You're already logged in.")
             return redirect(url_for('main.index'))
         return f(*args, **kwargs)
     return decorated_function

@@ -56,24 +56,19 @@
     * now implement for post writing!!
 
 
-# and it empties itself (but not the rest of the form!)
-revise form.html
-modal: where is dropphoto/ugly border
-can I avoid Markup with __html__ method?
-generic dismiss form!
-
-everything is somewhat messy
-
-# simplify write_/edit_post
-# edit_post / reload write_post should have post photos in the "new" list
-
-error when author is None?
-
-# non-ascii en titulos! -> SOLVE THIS!
+# please empty the rest of the form!
+# dz-preview NOT at the end of the form!
+# modal: where is dropphoto/ugly border
+# revise form.html (* when required, form-box-centered, generic dismiss)
+# reloading write_/edit_post should have post photos in the "new" list
 # photo max size!!
-
+# handle dropzone errors (i.e.: what happens when two photos are dropped?)
 
 # main photo!
+
+can I avoid Markup with __html__ method?
+everything is somewhat messy
+error when author is None?
 
 
 **reforming MODELS**
@@ -94,6 +89,9 @@ error when author is None?
 * user_forms macro is not very good (implies table, can be empty, ...)
 * revise decorators
 * user_model, forms, ... testing!!
+
+* TESTING
+  * Subclass for setUp and tearDown, common operations, etc.
 
 * FORMS
   * form-wide errors?
@@ -124,6 +122,7 @@ it is definitely the time to...
 * revise the docs!
 * revise the unit tests!
 * unit test helpers!
+* helper strings...
 
 ...
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from flask import request, render_template, current_app
 from flask.views import View
 from . import main
@@ -37,21 +38,21 @@ class IndexList(PostList):
 class AuthorList(PostList):
     def query(self, **kwargs):
         author = get_or_404(User, User.username == kwargs['username'])
-        self.title = "Posts by {}".format(author.name or author.username)
+        self.title = u"Posts by {}".format(author.name or author.username)
         return Post.query.filter_by(author=author)
 
 
 class TagList(PostList):
     def query(self, **kwargs):
         tag = get_or_404(Tag, Tag.slug == kwargs['slug'])
-        self.title = "Posts tagged {}".format(tag.name)
+        self.title = u"Posts tagged {}".format(tag.name)
         return Post.query.filter(Post.tags.contains(tag))
 
 
 class CategoryList(PostList):
     def query(self, **kwargs):
         category = get_or_404(Category, Category.slug == kwargs['slug'])
-        self.title = "Posts under category {}".format(category.name)
+        self.title = u"Posts under category {}".format(category.name)
         return Post.query.filter_by(category=category)
 
 main.add_url_rule('/',                  view_func=IndexList.as_view('index'))
