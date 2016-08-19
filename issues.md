@@ -89,9 +89,13 @@ error when author is None?
   with builtin 'id'). Solved differently than on Category.
 
 * Build AJAX form for first-level comments.
-* Order comments on created.desc(), then
+  * Comment include thing.                      --
+  * Known vs. unknown user.                     --
+  * Record in database.                         --
+  * Forms to post.forms (post and user data?).  --
+* Order comments on created.desc(), then        --
   * apply form to nested comments.
-  
+
 
 **********************************
 * revise macros, form macros and use modern system for rendering...

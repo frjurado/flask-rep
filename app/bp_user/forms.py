@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from flask import url_for
 from wtforms import StringField, SelectField, HiddenField
-from wtforms.validators import Required, URL, ValidationError
+from wtforms.validators import InputRequired, URL, ValidationError
 from ..forms import InlineForm
 from ..models.users import Role, User
 
 
 class UserForm(InlineForm):
     _endpoint = 'user.edit_profile'
-    username = HiddenField(validators=[Required()])
+    username = HiddenField(validators=[InputRequired()])
 
     def __init__(self, user=None, **kwargs):
         super(UserForm, self).__init__(**kwargs)
@@ -25,12 +25,12 @@ class UserForm(InlineForm):
 
 class NameForm(UserForm):
     _submit = u"Change name"
-    name = StringField(u"Name", validators = [Required()])
+    name = StringField(u"Name", validators = [InputRequired()])
 
 
 class UrlForm(UserForm):
     _submit = u"Change URL"
-    url = StringField(u"URL", validators = [Required(), URL()])
+    url = StringField(u"URL", validators = [InputRequired(), URL()])
 
 
 class DeleteForm(UserForm):
@@ -42,7 +42,7 @@ class DeleteForm(UserForm):
 class RoleForm(UserForm):
     _submit = u"Change role"
     _endpoint = 'user.assign_role'
-    role = SelectField("Role", coerce=int, validators=[Required()])
+    role = SelectField("Role", coerce=int, validators=[InputRequired()])
 
     def __init__(self, user=None, **kwargs):
         super(RoleForm, self).__init__(user, **kwargs)

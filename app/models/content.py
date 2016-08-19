@@ -3,7 +3,8 @@ import re
 from datetime import datetime as dt
 from bleach import linkify, clean
 from markdown import markdown
-from flask import url_for, Markup
+from hashlib import md5
+from flask import url_for, render_template, Markup, request
 from flask.ext.login import current_user
 from sqlalchemy.ext.declarative import declared_attr
 from . import BaseModel
@@ -283,5 +284,29 @@ class Comment(MainContentMixin, BodyMixin, AuthorMixin, BaseModel):
     children = db.relationship("Comment",
                                backref = db.backref("parent", remote_side='Comment.id'),
                                foreign_keys = parent_id)
+
+    def guest(self):
+        return self.author is None
+
+    def __call__(self):
+        return Markup(render_template('_comment.html',comment = self))
+
+    def _set_avatar_hash(self):
+        self.avatar_hash = md5(self.email.lower().encode('utf-8')).hexdigest()
+
+    def gravatar(self, size=64, default="mm", rating="g"):
+        if not self.guest():
+            return self.author.gravatar(size=size, default=default, rating=rating)
+        if request.is_secure:
+            url = "https://secure.gravatar.com/avatar"
+        else:
+            url = "http://www.gravatar.com/avatar"
+        return "{url}/{hash}?s={size}&d={default}&r={rating}".format(
+            url = url,
+            hash = md5(self.author_email.lower().encode('utf-8')).hexdigest(),
+            size = size,
+            default = default,
+            rating = rating
+        )
 
 db.event.listen(Comment.body_md, "set", Comment.on_changed_body)

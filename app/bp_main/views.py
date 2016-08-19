@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from flask import request, render_template, current_app
+from flask.ext.login import current_user
 from flask.views import View
 from . import main
+from ..bp_post.forms import CommentForm, GuestCommentForm
 from ..models.users import User
 from ..models.content import Post, Category, Tag
 from ..helpers import get_or_404
@@ -55,6 +57,7 @@ class CategoryList(PostList):
         self.title = u"Posts under category {}".format(category.name)
         return Post.query.filter_by(category=category)
 
+
 main.add_url_rule('/',                  view_func=IndexList.as_view('index'))
 main.add_url_rule('/author/<username>', view_func=AuthorList.as_view('author'))
 main.add_url_rule('/tag/<slug>',        view_func=TagList.as_view('tag'))
@@ -64,4 +67,8 @@ main.add_url_rule('/category/<slug>',   view_func=CategoryList.as_view('category
 @main.route('/<slug>')
 def post(slug):
     post = get_or_404(Post, Post.slug == slug)
-    return render_template('post.html', post=post)
+    if current_user.is_authenticated:
+        form = CommentForm(post)
+    else:
+        form = GuestCommentForm(post)
+    return render_template('post.html', post=post, form=form)

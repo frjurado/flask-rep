@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileField
-from wtforms.validators import Required, Regexp, InputRequired, ValidationError
+from wtforms.validators import Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
 from ..forms import BaseForm, InlineForm, ModalForm
 from ..models.content import Post, Category
@@ -65,17 +65,6 @@ class DeletePostForm(InlineForm):
         self.post = post
 
 
-####
-class ImageForm(BaseForm): # deprecated
-    _enctype = "multipart/form-data"
-    image = FileField(u"Image file", validators = [Required()])
-    #,Regexp("""^[^\s]+\.(jpe?g|png)$""")
-    alternative = StringField(u"Alternative text")
-    caption = TextAreaField(u"Caption")
-
-    # def validate_image(form, field):
-    #     field.data = re.sub(r'[^a-z0-9_-]', '_', field.data)
-
 class DropForm(ModalForm):
     _submit = u"Upload"
     _title = u"Upload a photo"
@@ -85,3 +74,30 @@ class DropForm(ModalForm):
 
     alternative = StringField(u"Alternative text")
     caption = TextAreaField(u"Caption")
+
+
+class CommentForm(BaseForm):
+    _submit = u"Comment"
+    _endpoint = 'post._comment'
+    _form_classes = ["commentForm"]
+
+    post_slug = HiddenField(validators=[InputRequired()])
+    body_md = PageDownField(u"Body", validators=[InputRequired()])
+
+    def __init__(self, post=None, **kwargs):
+        super(CommentForm, self).__init__(**kwargs)
+        if post is not None:
+            self.post_slug.data = post.slug
+            self._endpoint_kwargs = {'slug': self.post_slug.data}
+
+    def validate_post_slug(self, field):
+        post = Post.query.filter_by(slug=field.data).first()
+        if post is None:
+            raise ValidationError(u"Invalid post.")
+        self.post = post
+
+
+class GuestCommentForm(CommentForm):
+    author_email = StringField(u"Email")
+    author_name = StringField(u"Name")
+    author_url = StringField(u"URL")

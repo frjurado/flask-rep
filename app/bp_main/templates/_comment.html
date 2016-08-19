@@ -1,0 +1,13 @@
+{% set author = comment.author_name or comment.author %}
+<div class="media">
+  <div class="media-left">
+    <a href="#">
+      <img class="media-object" src="{{ comment.gravatar(size=40) }}" alt="{{ author }}">
+    </a>
+  </div>
+  <div class="media-body">
+    <h4 class="media-heading">{{ author }}</h4>
+    {{ comment.body_md }}
+    <p class="text-muted">{{ comment.created }}</p>
+  </div>
+</div>

@@ -2,10 +2,10 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, DeletePostForm, ImageForm, DropForm
+from .forms import PostForm, DeletePostForm, DropForm, CommentForm, GuestCommentForm
 from .. import db, images
 from ..models.users import Permission
-from ..models.content import Post, Category, Tag, Image
+from ..models.content import Post, Category, Tag, Image, Comment
 from ..decorators import permission_required
 from ..helpers import get_or_404 # necessary?
 
@@ -128,3 +128,25 @@ def _upload():
         )
         db.session.add(i)
         return jsonify(filename=i.filename, tag=i.img())
+
+
+@post.route('/<slug>/comment', methods=["POST"])
+def _comment(slug):
+    if current_user.is_authenticated:
+        form = CommentForm()
+    else:
+        form = GuestCommentForm()
+    if form.validate_on_submit():
+        c = Comment(post = form.post,
+                    body_md = form.body_md.data)
+        if current_user.is_authenticated:
+            print current_user
+            c.author = current_user
+            print c.author
+        else:
+            c.author_email = form.author_email.data
+            c.author_name = form.author_name.data
+            c.author_url = form.author_url.data
+        db.session.add(c)
+        db.session.commit()
+        return jsonify(comment=c())
