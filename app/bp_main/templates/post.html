@@ -1,10 +1,5 @@
 {% extends 'layout.html' %}
 
-{% block js %}
-{{ super() }}
-{{ pagedown.include_pagedown() }}
-{% endblock %}
-
 
 {% block content %}
 
@@ -46,13 +41,15 @@
 </div>
 {% endif %}
 
-{{ form() }}
 <div class="comments">
-{% if post.comments %}
-  {% for comment in post.comments | sort(True, attribute="created") %}
-  {{ comment() }}
-  {% endfor %}
-{% endif %}
+<h4>Comments</h4>
+{% for comment in post.comments | sort(attribute="created") if not comment.has_parent() %}
+{{ comment() }}
+{% endfor %}
+
+  <div class="commentFormBox">
+
+  </div>
 </div>
 
 {% endblock %}
@@ -60,30 +57,65 @@
 
 {% block scripts %}
 <script type=text/javascript>
-    $(function() {
-      var csrftoken = "{{ csrf_token() }}"
-      $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken)
-            }
+  $(function() {
+    // set csrftoken
+    var csrftoken = "{{ csrf_token() }}"
+    $.ajaxSetup({
+      beforeSend: function(xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+          xhr.setRequestHeader("X-CSRFToken", csrftoken)
         }
-      });
-
-    $("form").submit(function(e) {
+      }
+    });
+    // comment form
+    var commentForm = `{{ form() }}`
+    // set_ajax function
+    function set_ajax(form) {
+      var container = form.closest(".media-body");
+      form.submit(function(e) {
         e.preventDefault();
         $.ajax({
-            url: $(".commentForm").attr("action"),
-            data: $(".commentForm").serialize(),
-            type: 'POST',
-            success: function(response) {
-              $(".comments").prepend(response.comment);
-            },
-            error: function(error) {
-              console.log(error);
-            }
+          url: form.attr("action"),
+          data: form.serialize(),
+          type: 'POST',
+          success: function(response) {
+            form.parent(".form-box").remove();
+            container.children("p").children("a").removeClass("hidden");
+            container.children(".commentChildren").append(response.comment);
+            main_comment_form();
+          },
+          error: function(error) {
+            console.log(error);
+          }
         });
-    });
+      });
+    }
+    // answer_click function
+    function answer_click(elements) {
+      elements.click(function(e) {
+        e.preventDefault();
+        $('a[id^="answer"]').removeClass("hidden");
+        $("form.commentForm").parent(".form-box").remove();
+        $(this).addClass("hidden");
+        var id = $(this).attr("id").slice(6);
+        var container = $(this).closest(".media-body").children(".commentFormBox");
+        container.append(commentForm);
+        var form = $("form", container);
+        form.attr("id", "commentForm" + id);
+        form.find('input#parent_id').attr("value", id);
+        set_ajax(form);
+        form.find("#body_md").focus();
+      });
+    }
+    // create main comment form function
+    function main_comment_form() {
+      $(".comments > .commentFormBox").append(commentForm);
+      set_ajax($("form#commentForm"));
+    }
+    // create main comment form
+    main_comment_form();
+    // activate answer buttons
+    answer_click($('a[id^="answer"]'));
 });
 
 </script>

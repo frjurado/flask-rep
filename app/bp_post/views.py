@@ -139,10 +139,10 @@ def _comment(slug):
     if form.validate_on_submit():
         c = Comment(post = form.post,
                     body_md = form.body_md.data)
+        if form.parent is not None:
+            c.parent = form.parent
         if current_user.is_authenticated:
-            print current_user
             c.author = current_user
-            print c.author
         else:
             c.author_email = form.author_email.data
             c.author_name = form.author_name.data

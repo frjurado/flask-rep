@@ -4,7 +4,7 @@ from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileFi
 from wtforms.validators import Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
 from ..forms import BaseForm, InlineForm, ModalForm
-from ..models.content import Post, Category
+from ..models.content import Post, Category, Comment
 
 
 class PostForm(BaseForm):
@@ -78,11 +78,13 @@ class DropForm(ModalForm):
 
 class CommentForm(BaseForm):
     _submit = u"Comment"
+    _title = u"Leave a comment"
     _endpoint = 'post._comment'
     _form_classes = ["commentForm"]
 
     post_slug = HiddenField(validators=[InputRequired()])
-    body_md = PageDownField(u"Body", validators=[InputRequired()])
+    parent_id = HiddenField()
+    body_md = TextAreaField("", validators=[InputRequired()])
 
     def __init__(self, post=None, **kwargs):
         super(CommentForm, self).__init__(**kwargs)
@@ -96,8 +98,12 @@ class CommentForm(BaseForm):
             raise ValidationError(u"Invalid post.")
         self.post = post
 
+    def validate_parent_id(self, field):
+        parent = Comment.query.get(str(field.data))
+        self.parent = parent or None
+
 
 class GuestCommentForm(CommentForm):
-    author_email = StringField(u"Email")
-    author_name = StringField(u"Name")
+    author_email = StringField(u"Email", validators=[InputRequired()])
+    author_name = StringField(u"Name", validators=[InputRequired()])
     author_url = StringField(u"URL")

@@ -6,8 +6,18 @@
     </a>
   </div>
   <div class="media-body">
-    <h4 class="media-heading">{{ author }}</h4>
+    <h4 class="media-heading">
+      {{ author }}
+      <span class="small text-muted">{{ comment.created }}</p>
+    </h4>
     {{ comment.body_md }}
-    <p class="text-muted">{{ comment.created }}</p>
+    <p><a id="answer{{ comment.id }}" href="#">Answer</a></p>
+    <div class="commentFormBox">
+    </div>
+    <div class="commentChildren">
+    {% for c in comment.children | sort(attribute="created") %}
+      {{ c() }}
+    {% endfor %}
+    </div>
   </div>
 </div>

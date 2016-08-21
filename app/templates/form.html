@@ -27,9 +27,9 @@
     {{ field() }}
     {{ field.label }}
   </div>
-  {% elif labelled %}
+  {% elif labelled and field.label.text and field.type not in ("HiddenField") %}
   <div class="form-group">
-    {{ field.label }}:
+    {{ field.label }}{{ "*" if field.flags.required }}:
     {{ field(class="form-control") }}
   </div>
   {% else %}

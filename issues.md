@@ -94,7 +94,13 @@ error when author is None?
   * Record in database.                         --
   * Forms to post.forms (post and user data?).  --
 * Order comments on created.desc(), then        --
-  * apply form to nested comments.
+  * apply form to nested comments.              --
+  * COMMENT_MAX_DEPTH?
+  * smaller form!                               --
+  * animation,
+  * no labels, what is InputRequired?           --
+  * we need a dismiss!
+
 
 
 **********************************

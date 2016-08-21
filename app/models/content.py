@@ -288,6 +288,9 @@ class Comment(MainContentMixin, BodyMixin, AuthorMixin, BaseModel):
     def guest(self):
         return self.author is None
 
+    def has_parent(self):
+        return self.parent is not None
+
     def __call__(self):
         return Markup(render_template('_comment.html',comment = self))
 
