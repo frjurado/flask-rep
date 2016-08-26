@@ -1,38 +1,52 @@
-/*
-  These are here just to check that
-  the stylesheet is being loaded.
-*/
 
+/* general */
 h1, h2, p {
     font-family: Helvetica;
 }
 
-.link-unstyled {
+.link-unstyled:link,
+.link-unstyled:visited,
+.link-unstyled:hover,
+.link-unstyled:active {
   color: inherit;
   text-decoration: inherit;
 }
 
-.alert {
+.alert {                   /* bootstrap? */
   font-weight: bold;
   color: #f88;
+}
+.float-right {
+  float: right;
 }
 
 .checkbox > input {
   margin-left: 0 !important; /* HORRIBLE */
 }
 
-.header {
+/* header */
+header {
+  color: white;
+  background-color: #dfd;
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: Helvetica, Arial, sans-serif;
+}
+#un-solo-paso {
+  font-size: 2em;
+  text-transform: uppercase;
+}
+
+.navbar-brand {
   background-color: #dfd;
 }
-
-.main-content {
-  margin-top: 15px;
+#navbar {
+  margin-left: -15px;
+  margin-right: -15px;
 }
 
-.float-right {
-  float: right;
-}
-
+/* DASHBOARD */
 .dashboard {
   margin: 10px 0;
   padding: 10px;

@@ -32,10 +32,6 @@
 * backref vs. back_populates (what is clearer?)
 * go on with the generic link idea (users?)
 
-
-**********************************
-# i'm here
-
 **IMAGE**
 * Image class, with MainContentMixin, filename, alternative & caption,
   * plus many-to-many relationship to Post.
@@ -84,24 +80,15 @@ error when author is None?
 * Some `render_as_batch=True` is to be added to `env.py`...
 
 
-**COMMENT**
-* First problem: adjacency list pattern fails (backref's remote side colides
-  with builtin 'id'). Solved differently than on Category.
+**COMMENT**: **COMMENT_MAX_DEPTH**
 
-* Build AJAX form for first-level comments.
-  * Comment include thing.                      --
-  * Known vs. unknown user.                     --
-  * Record in database.                         --
-  * Forms to post.forms (post and user data?).  --
-* Order comments on created.desc(), then        --
-  * apply form to nested comments.              --
-  * COMMENT_MAX_DEPTH?
-  * smaller form!                               --
-  * animation,
-  * no labels, what is InputRequired?           --
-  * we need a dismiss!
+# need a dismiss: show back the main comment form.
+  now change behavior in modal/comment forms
 
 
+**CSS**
+* Flashed messages should be colored.
+* 
 
 **********************************
 * revise macros, form macros and use modern system for rendering...

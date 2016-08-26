@@ -1,7 +1,7 @@
-{% extends 'layout.html' %}
+{% extends 'content.html' %}
 {% from 'macros.html' import pagination_widget %}
 
-{% block content %}
+{% block maincontent %}
 
 {% if title %}
 <h2>{{ title }}</h2>
@@ -10,8 +10,6 @@
 {% if posts == [] %}
 <p>No posts here.</p>
 {% else %}
-
-{{ pagination_widget(pagination, 'main.index') }}
 
 <ul class="list-unstyled">
   {% for post in posts %}
@@ -55,7 +53,6 @@
 </ul>
 
 {{ pagination_widget(pagination, 'main.index') }}
-
 {% endif %}
 
 {% endblock %}

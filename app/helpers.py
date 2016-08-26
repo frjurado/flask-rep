@@ -45,6 +45,11 @@ def get_or_404(model, criterion):
     return obj
 
 
+def redirect_url(): # from flask site
+    return request.args.get('next') or \
+           request.referrer or \
+           url_for('main.index')
+
 def next_or_index():
     url = request.args.get('next') or url_for('main.index')
     return redirect(url)

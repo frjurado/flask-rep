@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="row">
+  <!-- CONTENT -->
+  <div class="col-xs-12 col-md-9">
+    {% block maincontent %}
+    {% endblock %}
+  </div>
+  <!-- RIGHT COL -->
+  <div class="col-xs-12 col-md-3">
+    {% block rightcol %}
+    
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

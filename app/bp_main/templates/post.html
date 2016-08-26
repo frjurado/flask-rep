@@ -1,7 +1,7 @@
-{% extends 'layout.html' %}
+{% extends 'content.html' %}
 
 
-{% block content %}
+{% block maincontent %}
 
 <h2 class="post-title">
   {{ post.name }}
@@ -56,6 +56,8 @@
 
 
 {% block scripts %}
+{{ super() }}
+
 <script type=text/javascript>
   $(function() {
     // set csrftoken

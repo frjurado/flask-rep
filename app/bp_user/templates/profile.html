@@ -1,6 +1,7 @@
 {% extends 'dashboard.html' %}
 {% from 'macros.html' import collapse_button, collapse_form %}
 
+
 {% block dash_content %}
 <h2>
   {{ user.name or "(...)" }}
@@ -75,7 +76,9 @@
 
 {% endblock %}
 
+
 {% block scripts %}
+{{ super() }}
 <script>
   $('.change-button').on('click', function () {
     var text = $.trim($(this).text());

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head lang="en">
+  <head lang="es">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-      {% block title %}Simplest app{% endblock %}
+      {% block title %}un solo paso{% endblock %}
     </title>
     <!-- CSS -->
     {% block css %}
@@ -12,64 +12,111 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
     {% endblock %}
-    <!-- JS -->
-    {% block js %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    {% endblock %}
   </head>
 
   <body>
-    <div class="container">
-      <div class="row header">
+    <!-- HEADER -->
+    <header class="container header" style="background-image:url({{url_for('static', filename='img/sand.jpg')}})">
+      <div class="row">
         <div class="col-md-12">
-          <h1><a href="{{ url_for('main.index')}}">Simplest app</a></h1>
-
-          <ul class="list-inline">
-            {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('user.profile', username=current_user.username) }}">Dashboard</a></li>
-            <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
-            {% else %}
-            <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
-              {% if config['SIGNUP_ENABLED'] %}
-              <li><a href="{{ url_for('auth.signup') }}">Sign up</a></li>
-              {% endif %}
-            {% endif %}
-          </ul>
-
+          <h1>
+            <a href="{{ url_for('main.index')}}" class="link-unstyled">
+              el camino de 1000 millas comienza por<br>
+              <span id="un-solo-paso">un solo paso</span>
+            </a>
+          </h1>
         </div>
       </div>
+    </header>
+
+    <!-- MAIN NAV -->
+    <nav class="container navbar navbar-default">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">un solo paso</a>
+      </div>
+
+      <div class="collapse navbar-collapse" id="navbar">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+          <li><a href="#">Link</a></li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Action</a></li>
+              <li><a href="#">Another action</a></li>
+              <li><a href="#">Something else here</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#">Separated link</a></li>
+              <li role="separator" class="divider"></li>
+              <li><a href="#">One more separated link</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+          {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('user.profile', username=current_user.username) }}">Dashboard</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
+          {% else %}
+          <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
+            {% if config['SIGNUP_ENABLED'] %}
+            <li><a href="{{ url_for('auth.signup') }}">Sign up</a></li>
+            {% endif %}
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+      <!-- MESSAGES -->
       {% if get_flashed_messages() %}
       <div class="row">
-        <div class="col-md-4 col-md-offset-4 alert">
+        <div class="col-md-12">
           {% for m in get_flashed_messages() %}
-          {{ m }}<br>
+          <div class="alert alert-danger alert-dismissible" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            {{ m }}
+          </div>
           {% endfor %}
         </div>
       </div>
       {% endif %}
 
-      <div class="row main-content">
-        <div class="col-xs-12 col-md-9">
-        {% block content %}
-        {% endblock %}
-        </div>
-        <div class="col-xs-12 col-md-3">
-        {% block rightcol %}
-        {% endblock %}
-        </div>
-      </div>
+      {% block dashboard %}
+      {% endblock %}
 
-      <div class="row footer text-center">
-        - footer -
-      </div>
+      {% block content %}
+      {% endblock %}
+
+      <!-- FOOTER -->
+      <footer class="row text-center">
+        <div class="col-xs-12">
+          - footer -
+        </div>
+      </footer>
 
     </div>
 
+    <!-- MODALS -->
     {% block modals %}
     {% endblock %}
 
+    <!-- SCRIPTS -->
     {% block scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
+      </script>
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}">
+      </script>
     {% endblock %}
+    
   </body>
 </html>

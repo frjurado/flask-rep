@@ -26,6 +26,8 @@ class Config:
     UPLOADS_DEFAULT_DEST = './app/static/uploads'
     UPLOADS_DEFAULT_URL = '/static/uploads/'
 
+    COMMENT_MAX_DEPTH = 2
+
     @staticmethod
     def init_app(app):
         pass
