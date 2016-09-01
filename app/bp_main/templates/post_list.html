@@ -38,7 +38,7 @@
       by
       <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
         {{ post.author.name or post.author.username }}</a>,
-      {{ post.created }}
+      {{ moment(post.created).format('LL') }}
       {% if post.category %}
       <br>
       {{ post.category.tree() }}

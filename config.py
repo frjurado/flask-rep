@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
+from datetime import datetime
+
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -28,10 +31,11 @@ class Config:
 
     COMMENT_MAX_DEPTH = 2
 
+    ORIGIN = datetime(2016, 4, 3, 12, 00, 00, 000000)
+
     @staticmethod
     def init_app(app):
         pass
-
 
 class DevelopmentConfig(Config):
     """
