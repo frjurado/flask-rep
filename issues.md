@@ -88,7 +88,11 @@ error when author is None?
 
 **CSS**
 * Flashed messages should be colored.
-* 
+* Generic error template.
+* Status within post.html
+  * Restrict views.
+  * Status button.
+* Comment submitting doesn't actually refresh when top comment!
 
 **********************************
 * revise macros, form macros and use modern system for rendering...

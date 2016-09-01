@@ -4,7 +4,7 @@ from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileFi
 from wtforms.validators import Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
 from ..forms import BaseForm, InlineForm, ModalForm
-from ..models.content import Post, Category, Comment
+from ..models.content import Post, Category, Image, Comment
 
 
 class PostForm(BaseForm):
@@ -17,6 +17,8 @@ class PostForm(BaseForm):
     _category_list = None
     tags = StringField(u"Tags")
     _tag_list = None
+    main_image_id = StringField(u"Main image")
+    _main_image = None
     body_md = PageDownField(u"Body", validators=[InputRequired()])
 
     def __init__(self, **kwargs):
@@ -43,12 +45,18 @@ class PostForm(BaseForm):
         if field.data is not None:
             self._tag_list = [e.strip() for e in field.data.split(',') if e.strip()]
 
+    def validate_main_image_id(self, field):
+        image = Image.query.filter_by(filename=field.data.strip()).first()
+        if image is None:
+            raise ValidationError(u"Invalid main image.")
+        self.main_image = image
+
 
 class DeletePostForm(InlineForm):
     _danger = True
 
     _endpoint = 'post.delete'
-    _submit = u"Delete"
+    _submit = u"Del"
 
     slug = HiddenField(validators=[InputRequired()])
 
@@ -61,7 +69,36 @@ class DeletePostForm(InlineForm):
     def validate_slug(self, field):
         post = Post.query.filter_by(slug=field.data).first()
         if post is None:
-            raise ValidationError("Invalid post.")
+            raise ValidationError(u"Invalid post.")
+        self.post = post
+
+
+class StatusForm(InlineForm):
+    _endpoint = 'post._status'
+    _submit = u"On/Off"
+    _form_classes = ["statusForm"]
+
+    slug = HiddenField(validators=[InputRequired()])
+
+    def __init__(self, post=None, **kwargs):
+        super(StatusForm, self).__init__(**kwargs)
+        self.post = None
+        if post is not None:
+            self.post = post #not necessary?
+            self.slug.data = post.slug
+            self._endpoint_kwargs = {'slug': self.slug.data}
+
+    def _id(self):
+        name = self.__class__.__name__
+        if self.post is not None:
+            return name[0].lower() + name[1:] + str(self.post.id)
+        else:
+            return name[0].lower() + name[1:]
+
+    def validate_slug(self, field):
+        post = Post.query.filter_by(slug=field.data).first()
+        if post is None:
+            raise ValidationError(u"Invalid post.")
         self.post = post
 
 

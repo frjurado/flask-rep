@@ -16,6 +16,9 @@ h1, h2, p {
   font-weight: bold;
   color: #f88;
 }
+.float-left {
+  float: left;
+}
 .float-right {
   float: right;
 }
@@ -31,13 +34,15 @@ header {
   background-size: 100%;
   background-repeat: no-repeat;
   background-position: center;
-  font-family: Helvetica, Arial, sans-serif;
 }
-#un-solo-paso {
-  font-size: 2em;
+header h1 {
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 4em;
+  font-weight: bold;
   text-transform: uppercase;
 }
 
+/* navbar */
 .navbar-brand {
   background-color: #dfd;
 }
@@ -46,7 +51,7 @@ header {
   margin-right: -15px;
 }
 
-/* DASHBOARD */
+/* dashboard */
 .dashboard {
   margin: 10px 0;
   padding: 10px;
@@ -54,37 +59,67 @@ header {
   background-color: #ddf;
 }
 
+
+/* posts */
+.post-main-image {
+  position: relative;
+  margin-bottom: 30px;
+}
+.post-main-image-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 5px;
+  font-size: 1.1em;
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+}
+.post-buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
+  text-align: right;
+  margin: 5px;
+}
+.post-buttons div {
+  display: inline-block;;
+}
+.post-main-image-footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+}
 .post-title {
   color: #8b8;
   font-size: 3em;
 }
-
-.post-head {
-  font-size: 0.9em;
-  background-color: #efe;
-  color: #8a8;
-  margin: 0;
-  padding: 4px;
+.tag {
+  margin-right: 5px;
 }
-
-.post-body {
-  margin-top: 1em;
-}
-
-.post-excerpt {
-  clear: both;
-  margin: 1em 0;
-  color: #bbb;
-  font-size: 1.2em;
+.comments h3 {
+  background-color: #dfd;
+  padding-top: 10px;
 }
 
 /* SHORT POST */
 .short-post {
-  margin: 10px 0 10px -15px;
-  padding: 20px 10px 10px 10px;
+  position: relative;
+  margin: 15px 0 15px -15px;
+  padding: 15px;
   background-color: #dfd;
 }
-
+.post-off {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.5);
+}
 .short-post h2 {
   color: #8b8;
   margin-top: 0;

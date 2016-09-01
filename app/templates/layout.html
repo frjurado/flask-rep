@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dropzone.css') }}">
     {% endblock %}
+    <!-- FAVICON -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/footprint.png') }}" sizes="32x32">
   </head>
 
   <body>
@@ -21,8 +23,7 @@
         <div class="col-md-12">
           <h1>
             <a href="{{ url_for('main.index')}}" class="link-unstyled">
-              el camino de 1000 millas comienza por<br>
-              <span id="un-solo-paso">un solo paso</span>
+              un solo paso
             </a>
           </h1>
         </div>
@@ -91,10 +92,10 @@
       </div>
       {% endif %}
 
-      {% block dashboard %}
+      {% block content %}
       {% endblock %}
 
-      {% block content %}
+      {% block dashboard %}
       {% endblock %}
 
       <!-- FOOTER -->
@@ -117,6 +118,6 @@
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}">
       </script>
     {% endblock %}
-    
+
   </body>
 </html>

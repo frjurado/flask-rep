@@ -2,7 +2,7 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, DeletePostForm, DropForm, CommentForm, GuestCommentForm
+from .forms import PostForm, DeletePostForm, StatusForm, DropForm, CommentForm, GuestCommentForm
 from .. import db, images
 from ..models.users import Permission
 from ..models.content import Post, Category, Tag, Image, Comment
@@ -62,6 +62,9 @@ def write():
         # categories
         set_categories(post, form.old_category.data, form._category_list)
         #
+        if form.main_image is not None:
+            post.main_image = form.main_image
+        #
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
@@ -88,6 +91,9 @@ def edit(slug):
         # categories
         set_categories(post, form.old_category.data, form._category_list)
         #
+        if form.main_image is not None:
+            post.main_image = form.main_image
+        #
         db.session.add(post)
         db.session.commit()
         return redirect(url_for('main.post', slug=post.slug))
@@ -101,6 +107,17 @@ def edit(slug):
                            drop_form=drop_form,
                            new_photos=new_photos,
                            old_photos=old_photos)
+
+
+@post.route('/_status', methods=["POST"])
+@login_required
+def _status():
+    form = StatusForm()
+    if form.validate_on_submit():
+        status = form.post.change_status()
+        db.session.add(form.post)
+        db.session.commit()
+        return jsonify(id=form.post.id, status=status)
 
 
 @post.route('/delete/<slug>', methods=["POST"])
@@ -117,6 +134,7 @@ def delete(slug):
 
 
 @post.route('/file/_upload', methods=["POST"])
+@login_required
 def _upload():
     form = DropForm()
     if form.validate_on_submit():
@@ -147,6 +165,8 @@ def _comment(slug):
             c.author_email = form.author_email.data
             c.author_name = form.author_name.data
             c.author_url = form.author_url.data
+        c.post.comment_count = len(c.post.comments)
         db.session.add(c)
         db.session.commit()
+        print c()
         return jsonify(comment=c())

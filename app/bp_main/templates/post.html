@@ -3,28 +3,45 @@
 
 {% block maincontent %}
 
+<div class="post-main-image">
+  {% if post.main_image %}
+  {{ post.main_image.img() }}
+  {% else %}
+  <img src="{{ url_for('static', filename='img/no-img.png') }}" alt="No image" class="img-responsive">
+  {% endif %}
+
+  {% if post.category %}
+  <div class="post-main-image-header">
+    {{ post.category.tree(linked=False) }}
+  </div>
+  {% endif %}
+
+  {% if post.author == current_user or current_user.can(Permission.EDIT_POST) %}
+  <div class="post-buttons hidden">
+    {{ post.edit_link() }}
+    {{ post.delete_form() }}
+  </div>
+  {% endif %}
+
+  <div class="post-main-image-footer">
+    <div class="float-left">
+      <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
+        {{ post.author }}
+      </a>
+      · {{ post.created }}
+    </div>
+    <div class="float-right">
+      <a class="link-unstyled" href="#comments">
+        {{ post.comment_count }}
+        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+      </a>
+    </div>
+  </div>
+</div>
+
 <h2 class="post-title">
   {{ post.name }}
 </h2>
-
-<div class="post-head">
-  <a href="{{ url_for('main.author', username=post.author.username) }}">
-    <img src="{{ post.author.gravatar(32) }}" alt="{{ post.author.name or post.author.username }}">
-  </a>
-  - {{ post.created }}
-  {% if post.category %}
-  <br>
-  {{ post.category.tree() }}
-  {% endif %}
-</div>
-
-<div>
-  {% for tag in post.tags %}
-  <span class="label label-primary">
-    {{ tag.link(classes="link-unstyled") }}
-  </span>
-  {% endfor %}
-</div>
 
 <div class="post-body">
 {% if post.body_html %}
@@ -34,22 +51,28 @@
 {% endif %}
 </div>
 
-{% if post.author == current_user or current_user.can(Permission.EDIT_POST) %}
 <div>
-  {{ post.edit_link() }}
-  {{ post.delete_form() }}
+  <h3>Tags</h3>
+  {% if post.tags == [] %}
+  <p>No tags.</p>
+  {% else %}
+  {% for tag in post.tags %}
+  <span class="tag label label-primary">
+    {{ tag.link(classes="link-unstyled") }}
+  </span>
+  {% endfor %}
+  {% endif %}
 </div>
-{% endif %}
 
-<div class="comments">
-<h4>Comments</h4>
-{% for comment in post.comments | sort(attribute="created") if not comment.has_parent() %}
-{{ comment() }}
-{% endfor %}
+<div id="comments" class="comments">
+  <h3>Comments</h3>
 
-  <div class="commentFormBox">
+  {% for comment in post.comments | sort(attribute="created") if not comment.has_parent() %}
+  {{ comment() }}
+  {% endfor %}
 
-  </div>
+  <div class="commentFormBox"></div>
+
 </div>
 
 {% endblock %}
@@ -60,6 +83,14 @@
 
 <script type=text/javascript>
   $(function() {
+    // main image gadget
+    $('.post-main-image').hover(
+      function() {
+        $(".post-buttons").removeClass("hidden");
+      }, function() {
+        $(".post-buttons").addClass("hidden");
+      }
+    )
     // set csrftoken
     var csrftoken = "{{ csrf_token() }}"
     $.ajaxSetup({

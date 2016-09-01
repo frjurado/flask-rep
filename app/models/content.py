@@ -133,9 +133,20 @@ class Post(MainContentMixin, NameMixin, BodyMixin, AuthorMixin, MenuItem):
 
     __mapper_args__ = { "polymorphic_identity": "post" }
 
+    def change_status(self):
+        self.status = not self.status
+        return self.status
+
+    def status_form(self):
+        from ..bp_post.forms import StatusForm
+        form = StatusForm(self)
+        return form()
+
     def edit_link(self):
         href = url_for("post.edit", slug=self.slug)
-        link = u"<a class='btn btn-primary' href={}>Edit</a>".format(href)
+        link = """<a class="btn btn-primary" href={}>
+          <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+        </a>""".format(href)
         return Markup(link)
 
     def delete_form(self):
@@ -245,7 +256,7 @@ class Image(MainContentMixin, BaseModel):
         width_attr = ""
         if width is not None:
             width_attr = ' width="{}"'.format(width)
-        img_tag = '<img src="{src}" alt="{alt}"{width_attr}>'.format(
+        img_tag = '<img src="{src}" alt="{alt}"{width_attr} class="img-responsive">'.format(
             src = self.url(),
             alt = self.alternative,
             width_attr = width_attr
