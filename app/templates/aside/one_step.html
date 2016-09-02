@@ -1,4 +1,12 @@
-<h4>Un solo paso</h4>
-<p>El camino de {{ moment(config['ORIGIN']).fromNow(true) }}<br>
-  por UN SOLO PASO comienza
-</p>
+{% extends 'aside/aside.html' %}
+
+
+{% block content %}
+<div class="panel-body text-center">
+  <p>El camino de</p>
+  <div id="counter">{{ moment(config['ORIGIN']).fromNow(true) }}</div>
+  <p>por un solo paso <br>
+    comienza
+  </p>
+</div>
+{% endblock %}

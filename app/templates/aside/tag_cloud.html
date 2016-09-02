@@ -1,0 +1,10 @@
+{% extends 'aside/aside.html' %}
+
+
+{% block content %}
+<div class="panel-body">
+  {% for tag in tags %}
+  {{ tag.link() }}
+  {% endfor %}
+</div>
+{% endblock %}

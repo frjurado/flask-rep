@@ -16,17 +16,14 @@ h1, h2, p {
   font-weight: bold;
   color: #f88;
 }
-.float-left {
-  float: left;
-}
-.float-right {
-  float: right;
-}
 
 .checkbox > input {
   margin-left: 0 !important; /* HORRIBLE */
 }
 
+.label {
+  margin-right: 5px;
+}
 /* header */
 header {
   color: white;
@@ -51,6 +48,18 @@ header h1 {
   margin-right: -15px;
 }
 
+/* aside */
+#counter {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  color: white;
+  background-color: #222;
+  font-size: 1.2em;
+  font-weight: bold;
+}
 /* dashboard */
 .dashboard {
   margin: 10px 0;
@@ -105,10 +114,10 @@ header h1 {
   padding-top: 10px;
 }
 
-/* SHORT POST */
+/* short posts */
 .short-post {
   position: relative;
-  margin: 15px 0 15px -15px;
+  margin: 0 0 15px -15px;
   padding: 15px;
   background-color: #dfd;
 }

@@ -31,7 +31,7 @@ class Config:
 
     COMMENT_MAX_DEPTH = 2
 
-    ORIGIN = datetime(2016, 4, 3, 12, 00, 00, 000000)
+    ORIGIN = datetime(2016, 8, 20, 12, 00, 00, 000000)
 
     @staticmethod
     def init_app(app):

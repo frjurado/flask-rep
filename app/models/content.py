@@ -228,6 +228,14 @@ class Tag(MainContentMixin, NameMixin, MenuItem):
 
     __mapper_args__ = { "polymorphic_identity": "tag" }
 
+    def link(self, label="primary"):
+        tag = """
+        <span class="label label-{0}">
+          {1}
+        </span>
+        """.format(label, super(Tag, self).link(classes="link-unstyled"))
+        return Markup(tag)
+
 
 db.event.listen(Tag.name, "set", Tag.on_changed_name)
 

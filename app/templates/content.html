@@ -10,7 +10,9 @@
   <!-- RIGHT COL -->
   <div class="col-xs-12 col-md-4">
     {% block rightcol %}
-    {{ aside.one_step() | safe }}
+    {{ aside.one_step() }}
+    {{ aside.category_list("Pruebas") }}
+    {{ aside.tag_cloud() }}
     {% endblock %}
   </div>
 </div>
