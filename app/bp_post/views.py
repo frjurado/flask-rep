@@ -2,7 +2,7 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, PageForm, DeletePostForm, StatusForm, DropForm, CommentForm, GuestCommentForm
+from .forms import PostForm, DeletePostForm, StatusForm, DropForm, CommentForm, GuestCommentForm
 from .. import db, images
 from ..models.users import Permission
 from ..models.content import Post, Category, Tag, Image, Comment
@@ -54,14 +54,16 @@ def write():
     drop_form = DropForm()
     if form.validate_on_submit():
         post = Post( name = form.name.data,
-                     excerpt = form.excerpt.data,
                      body_md = form.body_md.data,
-                     author = current_user._get_current_object() )
-        # tags
-        set_tags(post, form._tag_list)
-        # categories
-        set_categories(post, form.old_category.data, form._category_list)
-        #
+                     page = form.page.data )
+        if not post.page:
+            post.excerpt = form.excerpt.data
+            post.author = current_user._get_current_object()
+            # tags
+            set_tags(post, form._tag_list)
+            # categories
+            set_categories(post, form.categories.old.data, form.categories._list)
+            #
         if form._main_image is not None:
             post.main_image = form._main_image
         #

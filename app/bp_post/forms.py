@@ -1,17 +1,55 @@
 # -*- coding: utf-8 -*-
 import re
-from wtforms import StringField, TextAreaField, HiddenField, SelectField, FileField
+from flask.ext.wtf import Form
+from wtforms import StringField, TextAreaField, BooleanField, FormField, HiddenField, SelectField, FileField
 from wtforms.validators import Regexp, InputRequired, ValidationError
 from flask.ext.pagedown.fields import PageDownField
 from ..forms import BaseForm, InlineForm, ModalForm
 from ..models.content import Post, Category, Image, Comment
 
 
-class PostOrPageForm(BaseForm):
-    name = StringField(u"Title", validators=[InputRequired()])
-    main_image_id = StringField(u"Main image")
+class CategoryFields(Form):
+    _list = None
+
+    old = SelectField(u"Old category", coerce=int)
+    new = StringField(u"New category")
+
+    def validate_new(self, field):
+        data = field.data.strip()
+        if data:
+            self._list = [e.strip() for e in data.split(">")]
+            for name in self._list:
+                if Category.query.filter_by(name=name).first() is not None:
+                    raise ValidationError(u"Don't recreate an existing category.")
+
+class PostForm(BaseForm):
+    _submit = u"Submit post"
+    _tag_list = None
     _main_image = None
+
+    page = BooleanField(u"Page")
+    name = StringField(u"Title", validators=[InputRequired()])
+    excerpt = TextAreaField(u"Excerpt")
+    categories = FormField(CategoryFields)
+    tags = StringField(u"Tags")
+    main_image_id = StringField(u"Main image")
     body_md = PageDownField(u"Body", validators=[InputRequired()])
+
+    def __init__(self, **kwargs):
+        super(PostForm, self).__init__(**kwargs)
+        self.categories.old.choices = [(0, u"No category")]
+        stack = Category.query.filter_by(parent_id=None)\
+                              .order_by(Category.name.desc())\
+                              .all()
+        while stack:
+            e = stack.pop()
+            if e.children:
+                stack.extend(e.children)
+            self.categories.old.choices.append( (e.id, e.tree(linked=False)) )
+
+    def validate_tags(self, field):
+        if field.data is not None:
+            self._tag_list = [e.strip() for e in field.data.split(',') if e.strip()]
 
     def validate_main_image_id(self, field):
         filename = field.data.strip()
@@ -20,45 +58,6 @@ class PostOrPageForm(BaseForm):
             if image is None:
                 raise ValidationError(u"Invalid main image.")
             self._main_image = image
-
-
-class PostForm(PostOrPageForm):
-    _submit = u"Submit post"
-
-    excerpt = TextAreaField(u"Excerpt", validators=[InputRequired()])
-    old_category = SelectField(u"Old category", coerce=int) # use a form field!
-    new_category = StringField(u"New category")
-    _category_list = None
-    tags = StringField(u"Tags")
-    _tag_list = None
-
-    def __init__(self, **kwargs):
-        super(PostForm, self).__init__(**kwargs)
-        self.old_category.choices = [(0, u"No category")]
-        stack = Category.query.filter_by(parent_id=None)\
-                              .order_by(Category.name.desc())\
-                              .all()
-        while stack:
-            e = stack.pop()
-            if e.children:
-                stack.extend(e.children)
-            self.old_category.choices.append( (e.id, e.tree(linked=False)) )
-
-    def validate_new_category(self, field):
-        field.data = field.data.strip()
-        if field.data:
-            self._category_list = [e.strip() for e in field.data.split(">")]
-            for name in self._category_list:
-                if Category.query.filter_by(name=name).first() is not None:
-                    raise ValidationError(u"Don't recreate an existing category.")
-
-    def validate_tags(self, field):
-        if field.data is not None:
-            self._tag_list = [e.strip() for e in field.data.split(',') if e.strip()]
-
-
-class PageForm(PostOrPageForm):
-    _submit = u"Submit page"
 
 
 class DeletePostForm(InlineForm):

@@ -27,6 +27,15 @@
     {{ field() }}
     {{ field.label }}
   </div>
+  {% elif field.type == "FormField" %}
+  <div class="form-inline">
+    {% for subfield in field if not subfield.type == "CSRFTokenField"%}
+    <div class="form-group">
+      {{ subfield.label }}
+      {{ subfield(class="form-control") }}
+    </div>
+    {% endfor %}
+  </div>
   {% elif labelled and field.label.text and field.type not in ("HiddenField") %}
   <div class="form-group">
     {{ field.label }}{{ "*" if field.flags.required }}:

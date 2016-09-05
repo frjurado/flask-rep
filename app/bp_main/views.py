@@ -21,7 +21,7 @@ class PostList(View):
         return render_template('post_list.html', **context)
 
     def dispatch_request(self, **kwargs):
-        query = self.query(**kwargs).order_by(Post.created.desc())
+        query = self.query(**kwargs).filter(Post.page.is_(False)).order_by(Post.created.desc())
         page = request.args.get('page', 1, type=int)
         per_page = current_app.config['POSTS_PER_PAGE']
         pagination = query.paginate(page, per_page=per_page, error_out=True)

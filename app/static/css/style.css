@@ -150,6 +150,7 @@ footer {
   bottom: 0;
   left: 0;
   right: 0;
+  pointer-events: none;
   background-color: rgba(255, 255, 255, 0.5);
 }
 .short-post h2 {

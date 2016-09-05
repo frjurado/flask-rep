@@ -75,6 +75,16 @@
     )
   }
   //
+  function postOrPage (page) {
+    var fields = $("#excerpt, #categories-old, #categories-new, #tags").closest(".form-group");
+    if (page) { fields.addClass("hidden"); }
+    else { fields.removeClass("hidden"); }
+  }
+  $("#page").click( function () {
+    var $this = $(this);
+    postOrPage($this.is(':checked'));
+  })
+  //
   Dropzone.options.dropForm = {
     autoProcessQueue: false,
     uploadMultiple: false,
