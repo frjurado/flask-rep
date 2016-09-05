@@ -2,7 +2,7 @@
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask.ext.login import login_required, current_user
 from . import post
-from .forms import PostForm, DeletePostForm, StatusForm, DropForm, CommentForm, GuestCommentForm
+from .forms import PostForm, PageForm, DeletePostForm, StatusForm, DropForm, CommentForm, GuestCommentForm
 from .. import db, images
 from ..models.users import Permission
 from ..models.content import Post, Category, Tag, Image, Comment
@@ -62,8 +62,8 @@ def write():
         # categories
         set_categories(post, form.old_category.data, form._category_list)
         #
-        if form.main_image is not None:
-            post.main_image = form.main_image
+        if form._main_image is not None:
+            post.main_image = form._main_image
         #
         db.session.add(post)
         db.session.commit()
@@ -91,8 +91,8 @@ def edit(slug):
         # categories
         set_categories(post, form.old_category.data, form._category_list)
         #
-        if form.main_image is not None:
-            post.main_image = form.main_image
+        if form._main_image is not None:
+            post.main_image = form._main_image
         #
         db.session.add(post)
         db.session.commit()

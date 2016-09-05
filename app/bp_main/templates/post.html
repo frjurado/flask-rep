@@ -3,16 +3,13 @@
 
 {% block maincontent %}
 
+{% if post.main_image %}
 <div class="post-main-image">
-  {% if post.main_image %}
   {{ post.main_image.img() }}
-  {% else %}
-  <img src="{{ url_for('static', filename='img/no-img.png') }}" alt="No image" class="img-responsive">
-  {% endif %}
 
   {% if post.category %}
-  <div class="post-main-image-header">
-    {{ post.category.tree(linked=False) }}
+  <div class="post-main-image-header bg-black">
+    <b>{{ post.category.tree(linked=False) }}</b>
   </div>
   {% endif %}
 
@@ -23,7 +20,7 @@
   </div>
   {% endif %}
 
-  <div class="post-main-image-footer">
+  <div class="post-main-image-footer bg-black">
     <div class="pull-left">
       <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
         {{ post.author }}
@@ -42,6 +39,41 @@
 <h2 class="post-title">
   {{ post.name }}
 </h2>
+
+{% else %}
+<div class="post-main-image">
+  {% if post.author == current_user or current_user.can(Permission.EDIT_POST) %}
+  <div class="post-buttons hidden">
+    {{ post.edit_link() }}
+    {{ post.delete_form() }}
+  </div>
+  {% endif %}
+
+  <h2 class="post-title">
+    {{ post.name }}
+  </h2>
+</div>
+
+<div class="post-no-image-footer clearfix bg-black">
+  <div class="pull-left">
+    {% if post.category %}
+    <b>{{ post.category.tree(linked=False) }}</b> ·
+    {% endif %}
+    <a class="link-unstyled" href="{{ url_for('main.author', username=post.author.username) }}">
+      {{ post.author }}
+    </a>
+    · {{ moment(post.created).format('LL') }}
+  </div>
+  <div class="pull-right">
+    <a class="link-unstyled" href="#comments">
+      {{ post.comment_count }}
+      <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+    </a>
+  </div>
+</div>
+
+{% endif %}
+
 
 <div class="post-body">
 {% if post.body_html %}

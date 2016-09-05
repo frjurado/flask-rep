@@ -7,19 +7,30 @@ from ..forms import BaseForm, InlineForm, ModalForm
 from ..models.content import Post, Category, Image, Comment
 
 
-class PostForm(BaseForm):
+class PostOrPageForm(BaseForm):
+    name = StringField(u"Title", validators=[InputRequired()])
+    main_image_id = StringField(u"Main image")
+    _main_image = None
+    body_md = PageDownField(u"Body", validators=[InputRequired()])
+
+    def validate_main_image_id(self, field):
+        filename = field.data.strip()
+        if filename:
+            image = Image.query.filter_by(filename=filename).first()
+            if image is None:
+                raise ValidationError(u"Invalid main image.")
+            self._main_image = image
+
+
+class PostForm(PostOrPageForm):
     _submit = u"Submit post"
 
-    name = StringField(u"Title", validators=[InputRequired()])
     excerpt = TextAreaField(u"Excerpt", validators=[InputRequired()])
     old_category = SelectField(u"Old category", coerce=int) # use a form field!
     new_category = StringField(u"New category")
     _category_list = None
     tags = StringField(u"Tags")
     _tag_list = None
-    main_image_id = StringField(u"Main image")
-    _main_image = None
-    body_md = PageDownField(u"Body", validators=[InputRequired()])
 
     def __init__(self, **kwargs):
         super(PostForm, self).__init__(**kwargs)
@@ -45,11 +56,9 @@ class PostForm(BaseForm):
         if field.data is not None:
             self._tag_list = [e.strip() for e in field.data.split(',') if e.strip()]
 
-    def validate_main_image_id(self, field):
-        image = Image.query.filter_by(filename=field.data.strip()).first()
-        if image is None:
-            raise ValidationError(u"Invalid main image.")
-        self.main_image = image
+
+class PageForm(PostOrPageForm):
+    _submit = u"Submit page"
 
 
 class DeletePostForm(InlineForm):

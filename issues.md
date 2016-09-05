@@ -93,6 +93,8 @@ error when author is None?
   * Restrict views.
   * Status button.
 * Comment submitting doesn't actually refresh when top comment!
+* Off posts are not accessible!
+* Weird margin subtlety.
 
 **********************************
 * revise macros, form macros and use modern system for rendering...

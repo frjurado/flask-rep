@@ -1,6 +1,6 @@
 
 /* general */
-h1, h2, p {
+body {
     font-family: Helvetica;
 }
 
@@ -10,6 +10,11 @@ h1, h2, p {
 .link-unstyled:active {
   color: inherit;
   text-decoration: inherit;
+}
+
+.bg-black {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
 }
 
 .alert {                   /* bootstrap? */
@@ -48,6 +53,14 @@ header h1 {
   margin-right: -15px;
 }
 
+/* main columns (margin thing) */
+.main-content {
+
+}
+.right-col {
+
+}
+
 /* aside */
 #counter {
   display: inline-block;
@@ -60,6 +73,16 @@ header h1 {
   font-size: 1.2em;
   font-weight: bold;
 }
+
+/* footer */
+footer {
+  margin-top: 15px;
+  padding-top: 30px;
+  padding-bottom: 30px;
+  background-color: #555;
+  color: white;
+}
+
 /* dashboard */
 .dashboard {
   margin: 10px 0;
@@ -80,9 +103,6 @@ header h1 {
   left: 0;
   padding: 5px;
   font-size: 1.1em;
-  font-weight: bold;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
 }
 .post-buttons {
   position: absolute;
@@ -99,8 +119,11 @@ header h1 {
   bottom: 0;
   width: 100%;
   padding: 5px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: #fff;
+}
+.post-no-image-footer {
+  margin-top: -15px;
+  margin-bottom: 20px;
+  padding: 5px;
 }
 .post-title {
   color: #8b8;
@@ -117,7 +140,7 @@ header h1 {
 /* short posts */
 .short-post {
   position: relative;
-  margin: 0 0 15px -15px;
+  margin-bottom: 15px;
   padding: 15px;
   background-color: #dfd;
 }
