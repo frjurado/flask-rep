@@ -65,10 +65,10 @@
           <li><a href="{{ url_for('user.profile', username=current_user.username) }}">Dashboard</a></li>
           <li><a href="{{ url_for('auth.logout') }}">Log out</a></li>
           {% else %}
-          <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
+          <!-- <li><a href="{{ url_for('auth.login') }}">Log in</a></li>
             {% if config['SIGNUP_ENABLED'] %}
             <li><a href="{{ url_for('auth.signup') }}">Sign up</a></li>
-            {% endif %}
+            {% endif %} -->
           {% endif %}
         </ul>
       </div>
@@ -117,6 +117,7 @@
     {{ moment.include_moment() }}
     {{ moment.lang("es") }}
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     {% endblock %}
 
   </body>

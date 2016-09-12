@@ -50,31 +50,14 @@
 {% block scripts %}
 {{ super() }}
 {{ pagedown.include_pagedown() }}
-
-<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/clipboard.js/1.5.12/clipboard.min.js"></script>
+<script src="{{ url_for('static', filename='js/dropzone.js') }}"></script>
+
 
 <script type=text/javascript>
-  $.ajaxSetup({
-    beforeSend: function(xhr, settings) {
-        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken)
-        }
-    }
-  });
-  //
+
   new Clipboard('.to-clipboard');
-  //
-  function clipboardButton (ctx=undefined) {
-    $('.photo-thumbnail', ctx).hover(
-      function() {
-        $("button", this).removeClass("hidden");
-      }, function() {
-        $("button", this).addClass("hidden");
-      }
-    )
-  }
-  //
+  
   function postOrPage (page) {
     var fields = $("#excerpt, #categories-old, #categories-new, #tags").closest(".form-group");
     if (page) { fields.addClass("hidden"); }

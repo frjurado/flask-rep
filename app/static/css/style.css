@@ -137,6 +137,7 @@ footer {
   padding-top: 10px;
 }
 
+
 /* short posts */
 .short-post {
   position: relative;
@@ -220,6 +221,7 @@ footer {
   position: absolute;
   bottom: 0;
   right: 0;
+  margin: 5px !important;
 }
 
 #uploadPhotos {

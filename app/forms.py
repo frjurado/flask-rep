@@ -3,6 +3,7 @@ from flask import Markup, render_template, url_for
 from flask.ext.wtf import Form
 from wtforms import SubmitField, Label
 from wtforms.widgets.core import html_params
+from .helpers import redirect_url
 
 
 class _Form(Form):
@@ -44,6 +45,9 @@ class _Form(Form):
         if self._form_classes is not None:
             return ' '.join(self._form_classes)
         return None
+
+    def _cancel(self):
+        return Markup("<a href={}>Cancel</a>".format(redirect_url()))
 
     def __html__(self):
         return self()

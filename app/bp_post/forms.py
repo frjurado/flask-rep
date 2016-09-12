@@ -84,7 +84,7 @@ class DeletePostForm(InlineForm):
 class StatusForm(InlineForm):
     _endpoint = 'post._status'
     _submit = u"On/Off"
-    _form_classes = ["statusForm"]
+    _form_classes = ["status-form"]
 
     slug = HiddenField(validators=[InputRequired()])
 

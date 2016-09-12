@@ -80,10 +80,12 @@ error when author is None?
 * Some `render_as_batch=True` is to be added to `env.py`...
 
 
-**COMMENT**: **COMMENT_MAX_DEPTH**
-
-# need a dismiss: show back the main comment form.
+**COMMENT**
+* COMMENT_MAX_DEPTH
+* need a dismiss: show back the main comment form.
   now change behavior in modal/comment forms
+* Color sent comment for a few seconds.
+* MOderate comments.
 
 
 **CSS**
@@ -91,10 +93,9 @@ error when author is None?
 * Generic error template.
 * Status within post.html
   * Restrict views.
-  * Status button.
-* Comment submitting doesn't actually refresh when top comment!
-* Off posts are not accessible!
-* Weird margin subtlety.
+* On/off and del should use glyphicons as well...
+
+
 
 **********************************
 * revise macros, form macros and use modern system for rendering...

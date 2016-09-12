@@ -11,10 +11,10 @@
       <span class="small text-muted">{{ comment.created }}</p>
     </h4>
     {{ comment.body_md }}
-    <p><a id="answer{{ comment.id }}" href="#">Answer</a></p>
-    <div class="commentFormBox">
+    <p><a id="answer{{ comment.id }}" class="answer-button" href="#">Answer</a></p>
+    <div class="comment-form-box">
     </div>
-    <div class="commentChildren">
+    <div class="comment-children">
     {% for c in comment.children | sort(attribute="created") %}
       {{ c() }}
     {% endfor %}

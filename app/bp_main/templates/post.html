@@ -91,6 +91,7 @@
 {% endif %}
 </div>
 
+
 <div>
   <h3>Tags</h3>
   {% if post.tags == [] %}
@@ -102,6 +103,7 @@
   {% endif %}
 </div>
 
+
 <div id="comments" class="comments">
   <h3>Comments</h3>
 
@@ -109,7 +111,7 @@
   {{ comment() }}
   {% endfor %}
 
-  <div class="commentFormBox"></div>
+  <div class="comment-form-box"></div>
 
 </div>
 
@@ -117,97 +119,10 @@
 
 
 {% block scripts %}
+<script type=text/javascript>
+  var commentForm = `{{ form() }}`;
+</script>
+
 {{ super() }}
 
-<script type=text/javascript>
-  $(function() {
-    // main image gadget
-    $('.post-main-image').hover(
-      function() {
-        $(".post-buttons").removeClass("hidden");
-      }, function() {
-        $(".post-buttons").addClass("hidden");
-      }
-    )
-    // set csrftoken
-    var csrftoken = "{{ csrf_token() }}"
-    $.ajaxSetup({
-      beforeSend: function(xhr, settings) {
-        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-          xhr.setRequestHeader("X-CSRFToken", csrftoken)
-        }
-      }
-    });
-    // comment form
-    var commentForm = `{{ form() }}`
-    // set_ajax function
-    function set_ajax(form) {
-      var container = form.closest(".media-body");
-      form.submit(function(e) {
-        e.preventDefault();
-        $.ajax({
-          url: form.attr("action"),
-          data: form.serialize(),
-          type: 'POST',
-          success: function(response) {
-            form.parent(".form-box").remove();
-            container.children("p").children("a").removeClass("hidden");
-            container.children(".commentChildren").append(response.comment);
-            main_comment_form();
-          },
-          error: function(error) {
-            console.log(error);
-          }
-        });
-      });
-    }
-    // answer_click function
-    function answer_click(elements) {
-      elements.click(function(e) {
-        e.preventDefault();
-        $('a[id^="answer"]').removeClass("hidden");
-        $("form.commentForm").parent(".form-box").remove();
-        $(this).addClass("hidden");
-        var id = $(this).attr("id").slice(6);
-        var container = $(this).closest(".media-body").children(".commentFormBox");
-        container.append(commentForm);
-        var form = $("form", container);
-        form.attr("id", "commentForm" + id);
-        form.find('input#parent_id').attr("value", id);
-        set_ajax(form);
-        form.find("#body_md").focus();
-      });
-    }
-    // create main comment form function
-    function main_comment_form() {
-      $(".comments > .commentFormBox").append(commentForm);
-      set_ajax($("form#commentForm"));
-    }
-    // create main comment form
-    main_comment_form();
-    // activate answer buttons
-    answer_click($('a[id^="answer"]'));
-    //
-    function set_ajax(form) {
-      form.submit(function(e) {
-        e.preventDefault();
-        $.ajax({
-          url: form.attr("action"),
-          data: form.serialize(),
-          type: 'POST',
-          success: function(response) {
-            var curtain = $(".post-off");
-            if (response.status) { curtain.addClass("hidden"); }
-            else { curtain.removeClass("hidden"); }
-          },
-          error: function(error) {
-            console.log(error);
-          }
-        });
-      });
-    }
-    set_ajax($(".statusForm"));
-});
-
-</script>
 {% endblock %}
