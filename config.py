@@ -14,13 +14,15 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or NOT_SO_SECRET_KEY
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SSL_DISABLE = True
 
     MAIL_SERVER = 'smtp.googlemail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') # sender
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_SUBJECT_PREFIX = u"[Test blog mail] - " # revise
+    MAIL_SENDER = "un solo paso Admin <fr.jurado@gmail.com>"
+    MAIL_SUBJECT_PREFIX = u"[un solo paso] - "
     ADMIN = os.environ.get('ADMIN') # main administrator mail
 
     SIGNUP_ENABLED = True
@@ -61,7 +63,44 @@ class ProductionConfig(Config):
     """
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-    SIGNUP_ENABLED = os.environ.get('SIGNUP_ENABLED') or False
+    SIGNUP_ENABLED = bool(os.environ.get('SIGNUP_ENABLED'))
+    SSL_DISABLE = bool(os.environ.get('SSL_DISABLE'))
+
+    @classmethod
+    def init_app(cls, app):
+        Config.init_app(app)
+
+        import logging
+        from logging.handlers import SMTPHandler
+        from logging import StreamHandler
+
+        # email errors to admin
+        credentials = None
+        secure = None
+        if getattr(cls, 'MAIL_USERNAME', None) is not None:
+            credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
+            if getattr(cls, 'MAIL_USE_TLS', None):
+                secure = ()
+        mail_handler = SMTPHandler(
+            mailhost = (cls.MAIL_SERVER, cls.MAIL_PORT),
+            fromaddr = cls.MAIL_SENDER,
+            toaddrs = [cls.ADMIN],
+            subject = cls.MAIL_SUBJECT_PREFIX + u"Application Error",
+            credentials = credentials,
+            secure = secure
+        )
+        mail_handler.setLevel(logging.ERROR)
+        app.logger.addHandler(mail_handler)
+
+        # log to stderr
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.WARNING)
+        app.logger.addHandler(file_handler)
+
+        # handle proxy server headers
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
+
 
 config = {
     'development': DevelopmentConfig,

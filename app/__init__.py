@@ -50,6 +50,10 @@ def create_app(config_name='default'):
     configure_uploads(app, images)
     patch_request_class(app, size = 2*1024*1024)
 
+    if not app.debug and not app.testing and not app.config['SSL_DISABLE']:
+        from flask_sslify import SSLify
+        sslify = SSLify(app)
+
     from .bp_main import main
     from .bp_auth import auth
     from .bp_user import user
